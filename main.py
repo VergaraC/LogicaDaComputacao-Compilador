@@ -8,9 +8,7 @@ resultado = 0
 nAtual = ""
 listaOrdem = list()
 listaAlgarismos = ["0","1","2","3","4","5","6","7","8","9"]
-print(arg)
 while i< len(arg):
-    print(arg[i])
     if arg[i].isnumeric():
         nAtual = nAtual + arg[i]      
         
@@ -26,7 +24,6 @@ while i< len(arg):
 if nAtual != "":
     listaOrdem.append(nAtual)
 
-print(listaOrdem)
 if listaOrdem[0] == "+" or listaOrdem[0] == "-"  or listaOrdem[len(listaOrdem)-1] == "+" or listaOrdem[len(listaOrdem)-1] == "-":
     raise error
 j = 1

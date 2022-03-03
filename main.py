@@ -37,6 +37,11 @@ class Tokenizer():
             if self.position >= len(self.origin):
                 self.actual = Token("NUMBER",int(algarismos))
                 return self.actual
+            while self.origin[self.position] == " ":
+                if self.position + 1 < len(self.origin):
+                    self.position += 1
+                    if self.origin[self.position].isnumeric():
+                        raise error
             while self.origin[self.position].isnumeric():
                 algarismos += self.origin[self.position]
                 self.position += 1

@@ -50,3 +50,77 @@ while j< len(listaOrdem):
                 raise error
     j+=1
 print(resultado)
+
+
+########################################################################
+
+class Token():
+    def __init__(self, type,value):
+        self.type = type
+        self.value = value
+class Tokenizer():
+    def __init__(self):
+        self.origin = sys.argv[1]
+        self.position = 0
+        self.actual = None
+    def selectNext(self):
+
+        if self.position >= len(self.origin):
+            
+            self.actual = Token("EOF","")
+            return self.actual
+
+        while self.origin[self.position] == " " and self.position < len(self.origin):
+            self.position += 1
+        if self.origin[self.position] == "+":
+            self.position+=1
+            self.actual = Token("PLUS","")
+            return self.actual
+        elif self.origin[self.position] == "-":
+            self.position+=1
+            self.actual = Token("MINUS","")
+            return self.actual
+        elif self.origin[self.position].isnumeric():
+            algarismos = self.origin[self.position]
+            self.position += 1
+            while self.origin[self.position].isnumeric():
+                algarismos += self.origin[self.position]
+                self.position += 1
+                self.actual = Token("NUMBER",int(algarismos))
+                return self.actual
+        else:
+            raise error
+
+
+        
+
+class Parser():
+    tokens = None
+    result = 0
+    def parseExpession():
+        tokens = Tokenizer()
+        token = tokens.selectNext()
+        if token.type == "NUMBER":
+            result = token.value()
+            token = tokens.selectNext()
+                
+            while token.type == "PLUS" or token.type == "MINUS":
+            
+                if token.type == "PLUS":
+                    token = tokens.selectNext()
+                    if token.type == "NUMBER":
+                        result += token.value()
+                    else:
+                        raise error
+                if token.type == "MINUS":
+                    token = tokens.selectNext()
+                    if token.type == "NUMBER":
+                        result -= token.value()
+                    else:
+                        raise error
+            
+                token = tokens.selectNext()
+            return result
+        else:
+            return error
+        

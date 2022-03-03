@@ -82,7 +82,7 @@ class Parser():
                 Parser.tokens.selectNext()
             return result
         else:
-            return error
+            raise error
 
     def run():
         resultado = Parser.parseExpession()

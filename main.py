@@ -53,13 +53,11 @@ class Parser():
     def parseExpession():
         
         Parser.tokens.selectNext()
-        print(Parser.tokens.actual.type)
         if Parser.tokens.actual.type == "NUMBER":
             result = Parser.tokens.actual.value
             Parser.tokens.selectNext()
                 
             while Parser.tokens.actual.type == "PLUS" or Parser.tokens.actual.type == "MINUS":
-                print(result)
                 if Parser.tokens.actual.type == "PLUS":
                     Parser.tokens.selectNext()
                     if Parser.tokens.actual.type == "NUMBER":

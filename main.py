@@ -23,6 +23,8 @@ class Tokenizer():
 
         while self.origin[self.position] == " " and self.position < len(self.origin):
             self.position += 1
+            if self.position >= len(self.origin):
+                raise error
         if self.origin[self.position] == "+":
             self.position+=1
             self.actual = Token("PLUS","")
@@ -50,6 +52,8 @@ class Tokenizer():
                     self.position += 1
                     if self.origin[self.position].isnumeric():
                         raise error
+                else:
+                    raise error
             while self.origin[self.position].isnumeric():
                 algarismos += self.origin[self.position]
                 self.position += 1
@@ -121,7 +125,7 @@ class Parser():
         return resultado
 if __name__ == '__main__':
     origin = PrePro.filter(sys.argv[1])   
-
+    print(origin)
     result = Parser.run(origin)
     print(result)
 

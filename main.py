@@ -111,7 +111,7 @@ class Parser():
 
             
             if tokens.actual.type == "EOF":  
-                return resultado
+                return int(resultado)
             else:
                 raise error
 

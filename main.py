@@ -125,7 +125,6 @@ class Parser():
         return resultado
 if __name__ == '__main__':
     origin = PrePro.filter(sys.argv[1])   
-    print(origin)
     result = Parser.run(origin)
     print(result)
 

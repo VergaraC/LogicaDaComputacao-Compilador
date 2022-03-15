@@ -120,9 +120,7 @@ class Parser():
         resultado = Parser.parseExpression(tokens)
         return resultado
 if __name__ == '__main__':
-    origin = PrePro.filter(sys.argv[1])
-    print("Filtrado: ", origin)
-    
+    origin = PrePro.filter(sys.argv[1])   
 
     result = Parser.run(origin)
     print(result)

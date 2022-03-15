@@ -24,7 +24,9 @@ class Tokenizer():
         while self.origin[self.position] == " " and self.position < len(self.origin):
             self.position += 1
             if self.position >= len(self.origin):
-                raise error
+                self.actual = Token("EOF","")
+                return self.actual
+        
         if self.origin[self.position] == "+":
             self.position+=1
             self.actual = Token("PLUS","")
@@ -53,7 +55,7 @@ class Tokenizer():
                     if self.origin[self.position].isnumeric():
                         raise error
                 else:
-                    raise error
+                    break
             while self.origin[self.position].isnumeric():
                 algarismos += self.origin[self.position]
                 self.position += 1

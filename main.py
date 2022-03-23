@@ -121,6 +121,7 @@ class Parser():
     @staticmethod
     def parseFactor(tokens):
         tokens.selectNext()
+        resultado = 0
         if tokens.actual.type == "NUMBER":
             resultado = tokens.actual.value
             tokens.selectNext()
@@ -129,15 +130,12 @@ class Parser():
         elif tokens.actual.type == "MINUS":
             resultado -= Parser.parseFactor(tokens)
         elif tokens.actual.type == "OPEN-P":
-            
+            tokens.selectNext()
             resultado = Parser.parseExpression(tokens)
             if tokens.actual.type == "CLOSE-P":
                 tokens.selectNext()
             else:
                 raise error
-        elif tokens.actual.type ==  "CLOSE-P":
-            tokens.selectNext()
-            return resultado
         else:
             raise error
         return resultado

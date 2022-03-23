@@ -43,6 +43,14 @@ class Tokenizer():
             self.position+=1
             self.actual = Token("DIVISION","")
             return self.actual
+        elif self.origin[self.position] == "(":
+            self.position+=1
+            self.actual = Token("OPEN-P","")
+            return self.actual
+        elif self.origin[self.position] == ")":
+            self.position+=1
+            self.actual = Token("CLOSE-P","")
+            return self.actual
         elif self.origin[self.position].isnumeric():
             algarismos = self.origin[self.position]
             self.position += 1
@@ -74,37 +82,24 @@ class Parser():
     @staticmethod
     def parseTerm(tokens):
         resultado = 0
-        tokens.selectNext()
-        if tokens.actual.type == "NUMBER":
-            resultado = tokens.actual.value
-            tokens.selectNext()
-            if tokens.actual.type != "MULTIPLICATION" and tokens.actual.type != "DIVISION":
-                return resultado
-                
-            while tokens.actual.type == "MULTIPLICATION" or tokens.actual.type == "DIVISION":
-                if tokens.actual.type == "MULTIPLICATION":
-                    tokens.selectNext()
-                    if tokens.actual.type == "NUMBER":
-                        resultado *= tokens.actual.value
-                    else:
-                        raise error
-                if tokens.actual.type == "DIVISION":
-                    tokens.selectNext()
-                    if tokens.actual.type == "NUMBER":
-                        resultado /= int(tokens.actual.value)
-                    else:
-                        raise error
-            
-                tokens.selectNext()
+        resultado = Parser.parseFactor(tokens)
+        if tokens.actual.type != "MULTIPLICATION" and tokens.actual.type != "DIVISION":
             return resultado
-        else:
-            raise error
+            
+        while tokens.actual.type == "MULTIPLICATION" or tokens.actual.type == "DIVISION":
+            if tokens.actual.type == "MULTIPLICATION":
+                resultado *= int(Parser.parseFactor(tokens))
+            if tokens.actual.type == "DIVISION":
+                resultado /= Parser.parseFactor(tokens)
+                
+        return resultado
+        
     @staticmethod
     def parseExpression(tokens):
 
         resultado = Parser.parseTerm(tokens)
         #Parser.tokens.selectNext()
-        if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF":
+        if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":
                 
             while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS":
                 if tokens.actual.type == "PLUS":
@@ -116,14 +111,45 @@ class Parser():
                     resultado -= Parser.parseTerm(tokens)
 
             
-            if tokens.actual.type == "EOF":  
+            if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":  
                 return int(resultado)
             else:
                 raise error
+        else:
+            raise error
+
+    @staticmethod
+    def parseFactor(tokens):
+        tokens.selectNext()
+        if tokens.actual.type == "NUMBER":
+            resultado = tokens.actual.value
+            tokens.selectNext()
+        elif tokens.actual.type == "PLUS":
+            resultado += Parser.parseFactor(tokens)
+        elif tokens.actual.type == "MINUS":
+            resultado -= Parser.parseFactor(tokens)
+        elif tokens.actual.type == "OPEN-P":
+            
+            resultado = Parser.parseExpression(tokens)
+            if tokens.actual.type == "CLOSE-P":
+                tokens.selectNext()
+            else:
+                raise error
+        elif tokens.actual.type ==  "CLOSE-P":
+            tokens.selectNext()
+            return resultado
+        else:
+            raise error
+        return resultado
+
+
+
 
     def run(origin):
         tokens = Tokenizer(origin)
-        resultado = Parser.parseExpression(tokens)
+        resultado = int(Parser.parseExpression(tokens))
+        if tokens.actual.type != "EOF":
+            raise error
         return resultado
 if __name__ == '__main__':
     origin = PrePro.filter(sys.argv[1])   

@@ -191,7 +191,7 @@ class Parser():
         resultado = Parser.parseExpression(tokens).Evaluate()
         if tokens.actual.type != "EOF":
             raise error
-        return resultado
+        return int(resultado)
 if __name__ == '__main__':
     f = open(sys.argv[1],"r")
     origin1 = f.read()

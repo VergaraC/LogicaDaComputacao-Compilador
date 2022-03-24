@@ -153,7 +153,7 @@ class Parser():
 
             
             if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":  
-                return node.Evaluate()
+                return node
             else:
                 raise error
         else:
@@ -188,7 +188,7 @@ class Parser():
 
     def run(origin):
         tokens = Tokenizer(origin)
-        resultado = int(Parser.parseExpression(tokens))
+        resultado = Parser.parseExpression(tokens).Evaluate()
         if tokens.actual.type != "EOF":
             raise error
         return resultado

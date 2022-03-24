@@ -172,9 +172,9 @@ class Parser():
             #resultado += Parser.parseFactor(tokens)
         elif tokens.actual.type == "MINUS":
             node = UnOp("MINUS",[Parser.parseFactor(tokens)])
-            node -= Parser.parseFactor(tokens)
+            #resultado -= Parser.parseFactor(tokens)
         elif tokens.actual.type == "OPEN-P":
-            resultado = Parser.parseExpression(tokens)
+            node = Parser.parseExpression(tokens)
             if tokens.actual.type == "CLOSE-P":
                 tokens.selectNext()
             else:

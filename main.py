@@ -193,8 +193,12 @@ class Parser():
             raise error
         return resultado
 if __name__ == '__main__':
-    origin = PrePro.filter(sys.argv[1])   
-    result = Parser.run(origin)
+    f = open(sys.argv[1],"r")
+    origin1 = f.read()
+    f.close()
+    origin2 = PrePro.filter(origin1)
+
+    result = Parser.run(origin2)
     print(result)
 
 

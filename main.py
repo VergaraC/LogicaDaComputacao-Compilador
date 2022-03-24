@@ -2,12 +2,50 @@ import sys
 from os import error
 import re
 
-from httplib2 import RETRIES
-
 class Token():
     def __init__(self, type,value):
         self.type = type
         self.value = value
+
+class Node():
+    def __init__(self, value, listNodes):
+        self.value = value
+        self.children = listNodes
+    def Evaluate(self):
+        pass
+
+class BinOp(Node):
+    def Evaluate(self):
+        if self.value == "PLUS":
+            return int(self.children[0].Evaluate()) + int(self.children[1].Evaluate())
+
+        elif self.value == "MINUS":
+            return int(self.children[0].Evaluate()) - int(self.children[1].Evaluate())
+
+        elif self.value == "MULTIPLICATION":
+            return int(self.children[0].Evaluate()) * int(self.children[1].Evaluate())
+
+        elif self.value == "DIVISION":
+            return int(self.children[0].Evaluate()) / int(self.children[1].Evaluate())
+        else:
+            raise error
+class UnOp(Node):
+    def Evaluate(self):
+        r = 0
+        if self.value == "PLUS":
+            r += self.children[0].Evaluate(self.children[0])
+            return r
+        elif self.value == "MINUS":
+            r -= self.children[0].Evaluate(self.children[0])
+            return r
+        else:
+            raise error
+class IntVal(Node):
+    def Evaluate(self):
+        return self.value
+class NoOp(Node):
+    def Evaluate(self):
+        pass
 class Tokenizer():
     def __init__(self, origin):
         self.origin = origin
@@ -82,37 +120,40 @@ class Parser():
     @staticmethod
     def parseTerm(tokens):
         resultado = 0
-        resultado = Parser.parseFactor(tokens)
+        node = Parser.parseFactor(tokens)
         if tokens.actual.type != "MULTIPLICATION" and tokens.actual.type != "DIVISION":
-            return resultado
+            return node
             
         while tokens.actual.type == "MULTIPLICATION" or tokens.actual.type == "DIVISION":
             if tokens.actual.type == "MULTIPLICATION":
-                resultado *= int(Parser.parseFactor(tokens))
+                node = BinOp("MULTIPLICATION",[node, Parser.parseFactor(tokens)])
+                #resultado *= int(Parser.parseFactor(tokens))
             if tokens.actual.type == "DIVISION":
-                resultado /= Parser.parseFactor(tokens)
+                node = BinOp("DIVISION",[node, Parser.parseFactor(tokens)])
+
+                #resultado /= Parser.parseFactor(tokens)
                 
-        return resultado
+        return node
         
     @staticmethod
     def parseExpression(tokens):
 
-        resultado = Parser.parseTerm(tokens)
+        node = Parser.parseTerm(tokens)
         #Parser.tokens.selectNext()
         if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":
                 
             while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS":
                 if tokens.actual.type == "PLUS":
-                
-                    resultado += Parser.parseTerm(tokens)
+                    node = BinOp("PLUS",[node, Parser.parseTerm(tokens)])
+                    #resultado += Parser.parseTerm(tokens)
                     
                 elif tokens.actual.type == "MINUS":
-                    
-                    resultado -= Parser.parseTerm(tokens)
+                    node = BinOp("MINUS",[node, Parser.parseTerm(tokens)])
+                    #resultado -= Parser.parseTerm(tokens)
 
             
             if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":  
-                return int(resultado)
+                return node.Evaluate()
             else:
                 raise error
         else:
@@ -123,12 +164,15 @@ class Parser():
         tokens.selectNext()
         resultado = 0
         if tokens.actual.type == "NUMBER":
-            resultado = tokens.actual.value
+            node = IntVal(tokens.actual.value,[])
+            #resultado = tokens.actual.value
             tokens.selectNext()
         elif tokens.actual.type == "PLUS":
-            resultado += Parser.parseFactor(tokens)
+            node = UnOp("PLUS",[Parser.parseFactor(tokens)])
+            #resultado += Parser.parseFactor(tokens)
         elif tokens.actual.type == "MINUS":
-            resultado -= Parser.parseFactor(tokens)
+            node = UnOp("MINUS",[Parser.parseFactor(tokens)])
+            node -= Parser.parseFactor(tokens)
         elif tokens.actual.type == "OPEN-P":
             resultado = Parser.parseExpression(tokens)
             if tokens.actual.type == "CLOSE-P":
@@ -137,7 +181,7 @@ class Parser():
                 raise error
         else:
             raise error
-        return resultado
+        return node
 
 
 

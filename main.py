@@ -33,10 +33,10 @@ class UnOp(Node):
     def Evaluate(self):
         r = 0
         if self.value == "PLUS":
-            r += self.children[0].Evaluate(self.children[0])
+            r += self.children[0].Evaluate()
             return r
         elif self.value == "MINUS":
-            r -= self.children[0].Evaluate(self.children[0])
+            r -= self.children[0].Evaluate()
             return r
         else:
             raise error

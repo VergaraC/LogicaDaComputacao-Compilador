@@ -1,3 +1,4 @@
+from symtable import symtable
 import sys
 from os import error
 import re
@@ -7,6 +8,17 @@ class Token():
         self.type = type
         self.value = value
 
+class SymbolTable():
+    symbolTable = dict()
+    def setter(self,var, value):
+        self.symbolTable[var] = value
+        pass
+    def getter(self,var):
+        if var in self.symbolTable.keys():
+            return self.symbolTable[var]
+        raise error
+
+
 class Node():
     def __init__(self, value, listNodes):
         self.value = value
@@ -15,36 +27,55 @@ class Node():
         pass
 
 class BinOp(Node):
-    def Evaluate(self):
+    def Evaluate(self, symbolTable):
         if self.value == "PLUS":
-            return int(self.children[0].Evaluate()) + int(self.children[1].Evaluate())
+            return int(self.children[0].Evaluate(symbolTable)) + int(self.children[1].Evaluate(symbolTable))
 
         elif self.value == "MINUS":
-            return int(self.children[0].Evaluate()) - int(self.children[1].Evaluate())
+            return int(self.children[0].Evaluate(symbolTable)) - int(self.children[1].Evaluate(symbolTable))
 
         elif self.value == "MULTIPLICATION":
-            return int(self.children[0].Evaluate()) * int(self.children[1].Evaluate())
+            return int(self.children[0].Evaluate(symbolTable)) * int(self.children[1].Evaluate(symbolTable))
 
         elif self.value == "DIVISION":
-            return int(self.children[0].Evaluate()) / int(self.children[1].Evaluate())
+            return int(self.children[0].Evaluate(symbolTable)) / int(self.children[1].Evaluate(symbolTable))
+    
         else:
             raise error
 class UnOp(Node):
-    def Evaluate(self):
+    def Evaluate(self, symbolTable):
         r = 0
         if self.value == "PLUS":
-            r += self.children[0].Evaluate()
+            r += self.children[0].Evaluate(symbolTable)
             return r
         elif self.value == "MINUS":
-            r -= self.children[0].Evaluate()
+            r -= self.children[0].Evaluate(symbolTable)
             return r
         else:
             raise error
 class IntVal(Node):
-    def Evaluate(self):
+    def Evaluate(self, symbolTable):
         return self.value
 class NoOp(Node):
-    def Evaluate(self):
+    def Evaluate(self, symbolTable):
+        pass
+
+class Assignement(Node):
+    def Evaluate(self, symbolTable):
+        SymbolTable.setter(self.children[0].value, self.children[1].Evaluate(symbolTable))
+        pass
+class Print(Node):
+    def Evaluate(self, symbolTable):
+        print(self.children[0].Evaluate(symbolTable))
+        pass
+class VarVal(Node):
+    def Evaluate(self, symbolTable):
+        return SymbolTable.getter(self.value)
+        
+class Block(Node):
+    def Evaluate(self, symbolTable):
+        for i in self.children:
+            i.Evaluate(symbolTable)
         pass
 class Tokenizer():
     def __init__(self, origin):
@@ -58,8 +89,8 @@ class Tokenizer():
             
             self.actual = Token("EOF","")
             return self.actual
-
-        while self.origin[self.position] == " " and self.position < len(self.origin):
+        ## MANDAR IGNORAR /n
+        while (self.origin[self.position] == " " or self.origin[self.position] == "\n" or self.origin[self.position] == "\t" ) and self.position < len(self.origin):
             self.position += 1
             if self.position >= len(self.origin):
                 self.actual = Token("EOF","")
@@ -89,6 +120,22 @@ class Tokenizer():
             self.position+=1
             self.actual = Token("CLOSE-P","")
             return self.actual
+        elif self.origin[self.position] == "{":
+            self.position+=1
+            self.actual = Token("OPEN-BR","")
+            return self.actual
+        elif self.origin[self.position] == "}":
+            self.position+=1
+            self.actual = Token("CLOSE-BR","")
+            return self.actual
+        elif self.origin[self.position] == ";":
+            self.position+=1
+            self.actual = Token("SEMICOLUM","")
+            return self.actual
+        elif self.origin[self.position] == "=":
+            self.position+=1
+            self.actual = Token("ASSINGMENT","")
+            return self.actual
         elif self.origin[self.position].isnumeric():
             algarismos = self.origin[self.position]
             self.position += 1
@@ -108,18 +155,40 @@ class Tokenizer():
                 if self.position >= len(self.origin):
                     break
             self.actual = Token("NUMBER",int(algarismos))
-            return self.actual 
+            return self.actual
+
+        elif self.origin[self.position].isalpha():
+            char = self.origin[self.position]
+            self.position += 1
+            if self.position >= len(self.origin):
+                if char == "printf":
+                    self.actual = Token("PRINT",char)
+                else:
+                    self.actual = Token("VAR",char)
+                return self.actual
+            while self.origin[self.position] == " ":
+                if self.position + 1 < len(self.origin):
+                    self.position += 1
+                    if self.origin[self.position].isalpha():
+                        raise error
+                else:
+                    break
+            if char == "printf":
+                self.actual = Token("PRINT",char)
+            else:
+                self.actual = Token("VAR",char)
+            return self.actual
         else:
             raise error
 class PrePro():
     def filter(origin):
-        origin2 = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,origin)
-        return origin2
+        origin = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,origin)
+        origin3 = re.sub(' ', '', origin)
+        return origin3
 
 class Parser():
     @staticmethod
     def parseTerm(tokens):
-        resultado = 0
         node = Parser.parseFactor(tokens)
         if tokens.actual.type != "MULTIPLICATION" and tokens.actual.type != "DIVISION":
             return node
@@ -127,11 +196,8 @@ class Parser():
         while tokens.actual.type == "MULTIPLICATION" or tokens.actual.type == "DIVISION":
             if tokens.actual.type == "MULTIPLICATION":
                 node = BinOp("MULTIPLICATION",[node, Parser.parseFactor(tokens)])
-                #resultado *= int(Parser.parseFactor(tokens))
             if tokens.actual.type == "DIVISION":
                 node = BinOp("DIVISION",[node, Parser.parseFactor(tokens)])
-
-                #resultado /= Parser.parseFactor(tokens)
                 
         return node
         
@@ -145,11 +211,9 @@ class Parser():
             while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS":
                 if tokens.actual.type == "PLUS":
                     node = BinOp("PLUS",[node, Parser.parseTerm(tokens)])
-                    #resultado += Parser.parseTerm(tokens)
                     
                 elif tokens.actual.type == "MINUS":
                     node = BinOp("MINUS",[node, Parser.parseTerm(tokens)])
-                    #resultado -= Parser.parseTerm(tokens)
 
             
             if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":  
@@ -165,14 +229,14 @@ class Parser():
         resultado = 0
         if tokens.actual.type == "NUMBER":
             node = IntVal(tokens.actual.value,[])
-            #resultado = tokens.actual.value
+            tokens.selectNext()
+        if tokens.actual.type == "VAR":
+            node = VarVal(tokens.actual.value,[])
             tokens.selectNext()
         elif tokens.actual.type == "PLUS":
             node = UnOp("PLUS",[Parser.parseFactor(tokens)])
-            #resultado += Parser.parseFactor(tokens)
         elif tokens.actual.type == "MINUS":
             node = UnOp("MINUS",[Parser.parseFactor(tokens)])
-            #resultado -= Parser.parseFactor(tokens)
         elif tokens.actual.type == "OPEN-P":
             node = Parser.parseExpression(tokens)
             if tokens.actual.type == "CLOSE-P":
@@ -183,23 +247,71 @@ class Parser():
             raise error
         return node
 
+    @staticmethod
+    def parseStatement(tokens):
+        node = None
+        if tokens.actual.type == "VAR":
+            varName = tokens.actual.value
+            tokens.selectNext()
+            if tokens.actual.type == "ASSINGMENT":
+                node = Assignement("", [varName, Parser.parseExpression(tokens)])
+            else:
+                raise error
+        if tokens.actual.type == "PRINT":
+            tokens.selectNext()
+            if tokens.actual.type == "OPEN-P":
+                node = Print("", [Parser.parseExpression(tokens)])
+                if tokens.actual.type == "CLOSE-P":
+                    tokens.selectNext()
+                else:
+                    raise error
+            else:
+                raise error
+        if tokens.actual.type == "SEMICOLUM":
+            tokens.selectNext()
+            if(node == None):
+                node = NoOp("", [])
+            return node
+        else:
+            print(tokens.actual.type)
+            print(tokens.actual.value)
+            raise error
 
-
+    @staticmethod
+    def parseBlock(tokens):
+        tokens.selectNext()
+        
+        if tokens.actual.type == "OPEN-BR":
+            children = []
+            tokens.selectNext()
+            while tokens.actual.type != "CLOSE-BR":
+                if(tokens.actual.type == "EOF"):
+                    raise error
+                node = Parser.parseStatement(tokens)
+                children.append(node)
+            node = Block("", children)
+            tokens.selectNext()
+            return node
+        else:
+            raise error
 
     def run(origin):
         tokens = Tokenizer(origin)
+        node = Parser.parseBlock(tokens)
         resultado = Parser.parseExpression(tokens).Evaluate()
         if tokens.actual.type != "EOF":
             raise error
-        return int(resultado)
+        symtable = SymbolTable()
+        return node.Evaluate(symtable)
 if __name__ == '__main__':
-    f = open(sys.argv[1],"r")
-    origin1 = f.read()
-    f.close()
-    origin2 = PrePro.filter(origin1)
+    file = sys.argv[1]
+    with open(file, "r") as f:
+        origin = f.readlines()
+        origin1 = "".join(origin)
+        origin2 = PrePro.filter(origin1)
 
-    result = Parser.run(origin2)
-    print(result)
+        result = Parser.run(origin2)
+    
 
 
 

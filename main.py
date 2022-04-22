@@ -65,7 +65,7 @@ class Assignement(Node):
         pass
 class Print(Node):
     def Evaluate(self, symbolTable):
-        print(self.children[0].Evaluate(symbolTable))
+        print(int(self.children[0].Evaluate(symbolTable)))
         pass
 class VarVal(Node):
     def Evaluate(self, symbolTable):

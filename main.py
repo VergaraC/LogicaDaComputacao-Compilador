@@ -1,4 +1,3 @@
-from symtable import symtable
 import sys
 from os import error
 import re
@@ -89,7 +88,7 @@ class Tokenizer():
             
             self.actual = Token("EOF","")
             return self.actual
-        ## MANDAR IGNORAR /n
+        
         while (self.origin[self.position] == " " or self.origin[self.position] == "\n" or self.origin[self.position] == "\t" ) and self.position < len(self.origin):
             self.position += 1
             if self.position >= len(self.origin):
@@ -160,26 +159,16 @@ class Tokenizer():
         elif self.origin[self.position].isalpha():
             char = self.origin[self.position]
             self.position += 1
-            if self.position >= len(self.origin):
-                if char == "printf":
-                    self.actual = Token("PRINT",char)
-                else:
-                    self.actual = Token("VAR",char)
-                return self.actual
-            while self.origin[self.position] == " ":
-                if self.position + 1 < len(self.origin):
-                    self.position += 1
-                    if self.origin[self.position].isalpha():
-                        raise error
-                else:
-                    break
+            while self.position < len(self.origin) and (self.origin[self.position].isalnum() or self.origin[self.position] == "_"):
+                char += self.origin[self.position]
+                self.position += 1
+            
             if char == "printf":
                 self.actual = Token("PRINT",char)
             else:
                 self.actual = Token("VAR",char)
             return self.actual
-        else:
-            raise error
+                
 class PrePro():
     def filter(origin):
         origin = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,origin)
@@ -230,13 +219,15 @@ class Parser():
         if tokens.actual.type == "NUMBER":
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
-        if tokens.actual.type == "VAR":
+        elif tokens.actual.type == "VAR":
             node = VarVal(tokens.actual.value,[])
             tokens.selectNext()
         elif tokens.actual.type == "PLUS":
             node = UnOp("PLUS",[Parser.parseFactor(tokens)])
+            tokens.selectNext()
         elif tokens.actual.type == "MINUS":
             node = UnOp("MINUS",[Parser.parseFactor(tokens)])
+            tokens.selectNext()
         elif tokens.actual.type == "OPEN-P":
             node = Parser.parseExpression(tokens)
             if tokens.actual.type == "CLOSE-P":
@@ -244,27 +235,47 @@ class Parser():
             else:
                 raise error
         else:
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             raise error
         return node
 
     @staticmethod
     def parseStatement(tokens):
+    
         node = None
         if tokens.actual.type == "VAR":
             varName = tokens.actual.value
             tokens.selectNext()
+            
             if tokens.actual.type == "ASSINGMENT":
                 node = Assignement("", [varName, Parser.parseExpression(tokens)])
             else:
                 raise error
         if tokens.actual.type == "PRINT":
             tokens.selectNext()
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             if tokens.actual.type == "OPEN-P":
                 node = Print("", [Parser.parseExpression(tokens)])
+                #tokens.selectNext()
+                #print(tokens.actual.type)
+                #print(tokens.actual.value)
                 if tokens.actual.type == "CLOSE-P":
                     tokens.selectNext()
+                    #print(tokens.actual.type)
+                    #print(tokens.actual.value)
+                    if tokens.actual.type == "SEMICOLUM":
+                        tokens.selectNext()
+                        #print(tokens.actual.type)
+                        #print(tokens.actual.value)
+                        #print("return")
+                        return node
+                    else:
+                        raise error
                 else:
                     raise error
+                
             else:
                 raise error
         if tokens.actual.type == "SEMICOLUM":
@@ -280,25 +291,40 @@ class Parser():
     @staticmethod
     def parseBlock(tokens):
         tokens.selectNext()
-        
+        ###while tokens.actual.type != "EOF":
+            ###tokens.selectNext()
+            ###print("T:  ",tokens.actual.type)
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)
         if tokens.actual.type == "OPEN-BR":
             children = []
             tokens.selectNext()
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             while tokens.actual.type != "CLOSE-BR":
                 if(tokens.actual.type == "EOF"):
                     raise error
+                
                 node = Parser.parseStatement(tokens)
+                #print("Statement out")
+                #print(tokens.actual.type)
+                #print(tokens.actual.value)
                 children.append(node)
+            #print("while out")
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             node = Block("", children)
             tokens.selectNext()
             return node
         else:
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             raise error
 
     def run(origin):
         tokens = Tokenizer(origin)
         node = Parser.parseBlock(tokens)
-        resultado = Parser.parseExpression(tokens).Evaluate()
+        #resultado = Parser.parseExpression(tokens).Evaluate()
         if tokens.actual.type != "EOF":
             raise error
         symtable = SymbolTable()

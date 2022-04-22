@@ -215,7 +215,6 @@ class Parser():
     @staticmethod
     def parseFactor(tokens):
         tokens.selectNext()
-        resultado = 0
         if tokens.actual.type == "NUMBER":
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
@@ -224,10 +223,10 @@ class Parser():
             tokens.selectNext()
         elif tokens.actual.type == "PLUS":
             node = UnOp("PLUS",[Parser.parseFactor(tokens)])
-            tokens.selectNext()
+            #tokens.selectNext()
         elif tokens.actual.type == "MINUS":
             node = UnOp("MINUS",[Parser.parseFactor(tokens)])
-            tokens.selectNext()
+            #tokens.selectNext()
         elif tokens.actual.type == "OPEN-P":
             node = Parser.parseExpression(tokens)
             if tokens.actual.type == "CLOSE-P":
@@ -242,8 +241,10 @@ class Parser():
 
     @staticmethod
     def parseStatement(tokens):
-    
+        print(tokens.actual.type)
+        print(tokens.actual.value)
         node = None
+        
         if tokens.actual.type == "VAR":
             varName = tokens.actual.value
             tokens.selectNext()
@@ -254,17 +255,24 @@ class Parser():
                 raise error
         if tokens.actual.type == "PRINT":
             tokens.selectNext()
+            print("dentro do print")
             #print(tokens.actual.type)
             #print(tokens.actual.value)
             if tokens.actual.type == "OPEN-P":
+                #okens.selectNext() n precisa pq no expression ele pega
+                print("pre parse")
+                print(tokens.actual.type)
+                print(tokens.actual.value)
                 node = Print("", [Parser.parseExpression(tokens)])
                 #tokens.selectNext()
-                #print(tokens.actual.type)
-                #print(tokens.actual.value)
+                print("pre closep")
+                print(tokens.actual.type)
+                print(tokens.actual.value)
                 if tokens.actual.type == "CLOSE-P":
+                    print("closep")
                     tokens.selectNext()
-                    #print(tokens.actual.type)
-                    #print(tokens.actual.value)
+                    print(tokens.actual.type)
+                    print(tokens.actual.value)
                     if tokens.actual.type == "SEMICOLUM":
                         tokens.selectNext()
                         #print(tokens.actual.type)

@@ -229,7 +229,8 @@ class Parser():
             #tokens.selectNext()
         elif tokens.actual.type == "OPEN-P":
             node = Parser.parseExpression(tokens)
-            if tokens.actual.type == "CLOSE-P":
+            if tokens.actual.type == "CLOSE-P"
+            :
                 tokens.selectNext()
             else:
                 raise error

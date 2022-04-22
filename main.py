@@ -61,7 +61,7 @@ class NoOp(Node):
 
 class Assignement(Node):
     def Evaluate(self, symbolTable):
-        SymbolTable.setter(self.children[0].value, self.children[1].Evaluate(symbolTable))
+        symbolTable.setter(self.children[0], self.children[1].Evaluate(symbolTable))
         pass
 class Print(Node):
     def Evaluate(self, symbolTable):
@@ -69,7 +69,7 @@ class Print(Node):
         pass
 class VarVal(Node):
     def Evaluate(self, symbolTable):
-        return SymbolTable.getter(self.value)
+        return symbolTable.getter(self.value)
         
 class Block(Node):
     def Evaluate(self, symbolTable):
@@ -199,18 +199,30 @@ class Parser():
                 
             while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS":
                 if tokens.actual.type == "PLUS":
+                    print("pegou plus")
                     node = BinOp("PLUS",[node, Parser.parseTerm(tokens)])
+                    print(tokens.actual.type)
+                    print(tokens.actual.value)
+            
                     
                 elif tokens.actual.type == "MINUS":
                     node = BinOp("MINUS",[node, Parser.parseTerm(tokens)])
 
             
-            if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":  
+            if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "SEMICOLUM":  
                 return node
             else:
+                print("Error")
+                print(tokens.actual.type)
+                print(tokens.actual.value)
+            
                 raise error
         else:
-            raise error
+            #print("returnin expression")
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
+            
+            return node
 
     @staticmethod
     def parseFactor(tokens):
@@ -241,8 +253,8 @@ class Parser():
 
     @staticmethod
     def parseStatement(tokens):
-        print(tokens.actual.type)
-        print(tokens.actual.value)
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)
         node = None
         
         if tokens.actual.type == "VAR":
@@ -250,29 +262,34 @@ class Parser():
             tokens.selectNext()
             
             if tokens.actual.type == "ASSINGMENT":
+                
+                print("assigment ")
+                print(tokens.actual.type)
+                print(tokens.actual.value)
                 node = Assignement("", [varName, Parser.parseExpression(tokens)])
+                
             else:
                 raise error
         if tokens.actual.type == "PRINT":
             tokens.selectNext()
-            print("dentro do print")
+            #print("dentro do print")
             #print(tokens.actual.type)
             #print(tokens.actual.value)
             if tokens.actual.type == "OPEN-P":
                 #okens.selectNext() n precisa pq no expression ele pega
-                print("pre parse")
-                print(tokens.actual.type)
-                print(tokens.actual.value)
+                #print("pre parse")
+                #print(tokens.actual.type)
+                #print(tokens.actual.value)
                 node = Print("", [Parser.parseExpression(tokens)])
                 #tokens.selectNext()
-                print("pre closep")
-                print(tokens.actual.type)
-                print(tokens.actual.value)
+                #print("pre closep")
+                #print(tokens.actual.type)
+                #print(tokens.actual.value)
                 if tokens.actual.type == "CLOSE-P":
-                    print("closep")
+                    #print("closep")
                     tokens.selectNext()
-                    print(tokens.actual.type)
-                    print(tokens.actual.value)
+                    #print(tokens.actual.type)
+                    #print(tokens.actual.value)
                     if tokens.actual.type == "SEMICOLUM":
                         tokens.selectNext()
                         #print(tokens.actual.type)
@@ -314,9 +331,9 @@ class Parser():
                     raise error
                 
                 node = Parser.parseStatement(tokens)
-                #print("Statement out")
-                #print(tokens.actual.type)
-                #print(tokens.actual.value)
+                print("Statement out")
+                print(tokens.actual.type)
+                print(tokens.actual.value)
                 children.append(node)
             #print("while out")
             #print(tokens.actual.type)

@@ -1,6 +1,5 @@
 
-{printf(1+1);
-printf(1-1);
-printf(1*1);
-printf(1/1);
-printf(---1);}
+{
+x1 = 3;
+printf(x1);
+}

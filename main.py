@@ -199,10 +199,10 @@ class Parser():
                 
             while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS":
                 if tokens.actual.type == "PLUS":
-                    print("pegou plus")
+                    #print("pegou plus")
                     node = BinOp("PLUS",[node, Parser.parseTerm(tokens)])
-                    print(tokens.actual.type)
-                    print(tokens.actual.value)
+                    #print(tokens.actual.type)
+                    #print(tokens.actual.value)
             
                     
                 elif tokens.actual.type == "MINUS":
@@ -263,9 +263,9 @@ class Parser():
             
             if tokens.actual.type == "ASSINGMENT":
                 
-                print("assigment ")
-                print(tokens.actual.type)
-                print(tokens.actual.value)
+                #print("assigment ")
+                #print(tokens.actual.type)
+                #print(tokens.actual.value)
                 node = Assignement("", [varName, Parser.parseExpression(tokens)])
                 
             else:
@@ -331,9 +331,9 @@ class Parser():
                     raise error
                 
                 node = Parser.parseStatement(tokens)
-                print("Statement out")
-                print(tokens.actual.type)
-                print(tokens.actual.value)
+                #print("Statement out")
+                #print(tokens.actual.type)
+                #print(tokens.actual.value)
                 children.append(node)
             #print("while out")
             #print(tokens.actual.type)

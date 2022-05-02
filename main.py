@@ -38,6 +38,18 @@ class BinOp(Node):
 
         elif self.value == "DIVISION":
             return int(self.children[0].Evaluate(symbolTable)) / int(self.children[1].Evaluate(symbolTable))
+        
+        elif self.value == "AND":
+            return int(self.children[0].Evaluate(symbolTable)) and int(self.children[1].Evaluate(symbolTable))
+        elif self.value == "OR":
+            return int(self.children[0].Evaluate(symbolTable)) or int(self.children[1].Evaluate(symbolTable))
+        elif self.value == "EQUAL":
+            return int(self.children[0].Evaluate(symbolTable)) == int(self.children[1].Evaluate(symbolTable))
+        elif self.value == "GREATER":
+            return int(self.children[0].Evaluate(symbolTable)) > int(self.children[1].Evaluate(symbolTable))
+        elif self.value == "LESS":
+            return int(self.children[0].Evaluate(symbolTable)) < int(self.children[1].Evaluate(symbolTable))
+        
     
         else:
             raise error
@@ -49,6 +61,9 @@ class UnOp(Node):
             return r
         elif self.value == "MINUS":
             r -= self.children[0].Evaluate(symbolTable)
+            return r
+        elif self.value == "NOT":
+            r = not self.children[0].Evaluate(symbolTable)
             return r
         else:
             raise error
@@ -67,6 +82,20 @@ class Print(Node):
     def Evaluate(self, symbolTable):
         print(int(self.children[0].Evaluate(symbolTable)))
         pass
+class Scan(Node):
+    def Evaluate(self, symbolTable):
+        int(input())
+        pass
+class IfOp(Node):
+    def Evaluate(self):
+        if self.children[0].Evaluate():
+            self.children[1].Evaluate()
+        elif len(self.children) == 3:
+            self.children[2].Evaluate()
+class WhileOp(Node):
+    def Evaluate(self):
+        while self.children[0].Evaluate():
+            self.children[1].Evaluate()
 class VarVal(Node):
     def Evaluate(self, symbolTable):
         return symbolTable.getter(self.value)
@@ -119,6 +148,21 @@ class Tokenizer():
             self.position+=1
             self.actual = Token("CLOSE-P","")
             return self.actual
+        elif self.origin[self.position] == ">":
+            self.position+=1
+            self.actual = Token("GREATER","")
+        elif self.origin[self.position] == "<":
+            self.position+=1
+            self.actual = Token("LESS","")
+        elif self.origin[self.position] == "!":
+            self.position+=1
+            self.actual = Token("NOT","")
+        elif self.origin[self.position] == "|" and self.origin[self.position+1] == "|":
+            self.position+=2
+            self.actual = Token("OR","")
+        elif self.origin[self.position] == "&" and self.origin[self.position+1] == "&":
+            self.position+=2
+            self.actual = Token("AND","")
         elif self.origin[self.position] == "{":
             self.position+=1
             self.actual = Token("OPEN-BR","")
@@ -133,7 +177,11 @@ class Tokenizer():
             return self.actual
         elif self.origin[self.position] == "=":
             self.position+=1
-            self.actual = Token("ASSINGMENT","")
+            if self.origin[self.position] == "=":
+                self.position+=1
+                self.actual = Token("EQUAL","")
+            else:
+                self.actual = Token("ASSINGMENT","")
             return self.actual
         elif self.origin[self.position].isnumeric():
             algarismos = self.origin[self.position]
@@ -165,10 +213,20 @@ class Tokenizer():
             
             if char == "printf":
                 self.actual = Token("PRINT",char)
+            if char == "scanf":
+                self.actual = Token("SCAN",char)
+            if char == "if":
+                self.actual = Token("IF",char)
+            if char == "else":
+                self.actual = Token("ELSE",char)
+            if char == "while":
+                self.actual = Token("WHILE",char)
             else:
                 self.actual = Token("VAR",char)
             return self.actual
-                
+        else:
+            raise error
+
 class PrePro():
     def filter(origin):
         origin = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,origin)

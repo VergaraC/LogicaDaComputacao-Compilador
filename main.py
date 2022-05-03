@@ -1,3 +1,4 @@
+from ast import Or
 import sys
 from os import error
 import re
@@ -237,14 +238,16 @@ class Parser():
     @staticmethod
     def parseTerm(tokens):
         node = Parser.parseFactor(tokens)
-        if tokens.actual.type != "MULTIPLICATION" and tokens.actual.type != "DIVISION":
+        if tokens.actual.type != "MULTIPLICATION" and tokens.actual.type != "DIVISION" and tokens.actual.type != "AND":
             return node
             
-        while tokens.actual.type == "MULTIPLICATION" or tokens.actual.type == "DIVISION":
+        while tokens.actual.type == "MULTIPLICATION" or tokens.actual.type == "DIVISION" or tokens.actual.type == "AND":
             if tokens.actual.type == "MULTIPLICATION":
                 node = BinOp("MULTIPLICATION",[node, Parser.parseFactor(tokens)])
             if tokens.actual.type == "DIVISION":
                 node = BinOp("DIVISION",[node, Parser.parseFactor(tokens)])
+            if tokens.actual.type == "AND":
+                node = BinOp("AND",[node, Parser.parseFactor(tokens)])
                 
         return node
         
@@ -253,18 +256,19 @@ class Parser():
 
         node = Parser.parseTerm(tokens)
         #Parser.tokens.selectNext()
-        if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P":
+        if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "OR":
                 
-            while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS":
+            while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "OR":
                 if tokens.actual.type == "PLUS":
                     #print("pegou plus")
                     node = BinOp("PLUS",[node, Parser.parseTerm(tokens)])
                     #print(tokens.actual.type)
-                    #print(tokens.actual.value)
-            
-                    
+                    #print(tokens.actual.value)                    
                 elif tokens.actual.type == "MINUS":
                     node = BinOp("MINUS",[node, Parser.parseTerm(tokens)])
+
+                elif tokens.actual.type == "OR":
+                    node = BinOp("OR",[node, Parser.parseTerm(tokens)])
 
             
             if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "SEMICOLUM":  
@@ -297,8 +301,22 @@ class Parser():
         elif tokens.actual.type == "MINUS":
             node = UnOp("MINUS",[Parser.parseFactor(tokens)])
             #tokens.selectNext()
+        elif tokens.actual.type == "NOT":
+            node = UnOp("NOT",[Parser.parseFactor(tokens)])
+            #tokens.selectNext()
+        elif tokens.actual.type == "SCAN":
+            node = Scan((tokens))
+            tokens.selectNext()
+            if tokens.actual.type == "OPEN-P":
+                tokens.selectNext()
+                if tokens.actual.type == "CLOSE-P":
+                    tokens.selectNext()
+                else:
+                    raise error
+            else:
+                raise error
         elif tokens.actual.type == "OPEN-P":
-            node = Parser.parseExpression(tokens)
+            node = Parser.parseRelExpression(tokens)
             if tokens.actual.type == "CLOSE-P":
                 tokens.selectNext()
             else:
@@ -324,11 +342,19 @@ class Parser():
                 #print("assigment ")
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
-                node = Assignement("", [varName, Parser.parseExpression(tokens)])
-                
+                node = Assignement("", [varName, Parser.parseRelExpression(tokens)])
+                tokens.selectNext()
+                if tokens.actual.type == "SEMICOLUM":
+                        tokens.selectNext()
+                        #print(tokens.actual.type)
+                        #print(tokens.actual.value)
+                        #print("return")
+                        return node
+                else:
+                    raise error
             else:
                 raise error
-        if tokens.actual.type == "PRINT":
+        elif tokens.actual.type == "PRINT":
             tokens.selectNext()
             #print("dentro do print")
             #print(tokens.actual.type)
@@ -338,7 +364,7 @@ class Parser():
                 #print("pre parse")
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
-                node = Print("", [Parser.parseExpression(tokens)])
+                node = Print("", [Parser.parseRelExpression(tokens)])
                 #tokens.selectNext()
                 #print("pre closep")
                 #print(tokens.actual.type)
@@ -358,18 +384,61 @@ class Parser():
                         raise error
                 else:
                     raise error
-                
             else:
                 raise error
-        if tokens.actual.type == "SEMICOLUM":
+        elif tokens.actual.type == "SEMICOLUM":
             tokens.selectNext()
             if(node == None):
                 node = NoOp("", [])
             return node
+        elif tokens.actual.type == "WHILE":
+            tokens.selectNext()
+            if tokens.actual.type == "OPEN-P":
+                node1 = Parser.parseRelExpression(tokens)
+                if tokens.actual.type == "CLOSE-P":
+                    tokens.selectNext()
+                    node2 = Parser.parseStatement(tokens)
+                    node = WhileOp("", [node1,node2])
+                    return node
+                else:
+                    raise error
+            else:
+                raise error
+        elif tokens.actual.type == "IF":
+            tokens.selectNext()
+            if tokens.actual.type == "OPEN-P":
+                node1 = Parser.parseRelExpression(tokens)
+                if tokens.actual.type == "CLOSE-P":
+                    tokens.selectNext()
+                    node2 = Parser.parseStatement(tokens)
+                    tokens.selectNext()
+                    if tokens.actual.type == "ELSE":
+                        tokens.selectNext()
+                        node3 = Parser.parseStatement(tokens)
+                        node = IfOp("", [node1,node2,node3])
+                    else:  
+                        node = WhileOp("", [node1,node2])
+                    return node
+                else:
+                    raise error
+            else:
+                raise error
         else:
-            print(tokens.actual.type)
-            print(tokens.actual.value)
-            raise error
+            node = Parser.parseBlock(tokens)
+
+    @staticmethod
+    def parseRelExpression(tokens):
+        tokens.selectNext()
+        node = Parser.parseExpression(tokens)
+        if tokens.actual.type == "EQUAL":
+            node = BinOp("EQUAL",[node, Parser.parseExpression(tokens)])
+        elif tokens.actual.type == "GREATER":
+            node = BinOp("GREATER",[node, Parser.parseExpression(tokens)])
+        elif tokens.actual.type == "LESS":
+            node = BinOp("LESS",[node, Parser.parseExpression(tokens)])
+        else:
+            return node
+        return node
 
     @staticmethod
     def parseBlock(tokens):

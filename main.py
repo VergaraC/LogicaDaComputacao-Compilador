@@ -336,9 +336,9 @@ class Parser():
 
     @staticmethod
     def parseStatement(tokens):
-        print("startting statement")
-        print(tokens.actual.type)
-        print(tokens.actual.value)
+        #print("startting statement")
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)
         node = None
         
         if tokens.actual.type == "VAR":
@@ -465,16 +465,16 @@ class Parser():
         if tokens.actual.type == "OPEN-BR":
             children = []
             tokens.selectNext()
-            print(tokens.actual.type)
-            print(tokens.actual.value)
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             while tokens.actual.type != "CLOSE-BR":
                 if(tokens.actual.type == "EOF"):
                     raise error
                 
                 node = Parser.parseStatement(tokens)
-                print("Statement out")
-                print(tokens.actual.type)
-                print(tokens.actual.value)
+                #print("Statement out")
+                #print(tokens.actual.type)
+                #print(tokens.actual.value)
                 children.append(node)
             #print("while out")
             #print(tokens.actual.type)

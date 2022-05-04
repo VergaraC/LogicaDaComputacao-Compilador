@@ -85,8 +85,7 @@ class Print(Node):
         pass
 class Scan(Node):
     def Evaluate(self, symbolTable):
-        int(input())
-        pass
+        return int(input())
 class IfOp(Node):
     def Evaluate(self):
         if self.children[0].Evaluate():
@@ -288,7 +287,10 @@ class Parser():
 
     @staticmethod
     def parseFactor(tokens):
-        tokens.selectNext()
+        #tokens.selectNext()
+        print("startting factor")
+        print(tokens.actual.type)
+        print(tokens.actual.value)
         if tokens.actual.type == "NUMBER":
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
@@ -322,8 +324,8 @@ class Parser():
             else:
                 raise error
         else:
-            #print(tokens.actual.type)
-            #print(tokens.actual.value)
+            print(tokens.actual.type)
+            print(tokens.actual.value)
             raise error
         return node
 
@@ -339,13 +341,13 @@ class Parser():
             
             if tokens.actual.type == "ASSINGMENT":
                 
-                #print("assigment ")
+                print("assigment ")
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
                 node = Assignement("", [varName, Parser.parseRelExpression(tokens)])
-                tokens.selectNext()
+                #tokens.selectNext()
                 if tokens.actual.type == "SEMICOLUM":
-                        tokens.selectNext()
+                        #tokens.selectNext()
                         #print(tokens.actual.type)
                         #print(tokens.actual.value)
                         #print("return")

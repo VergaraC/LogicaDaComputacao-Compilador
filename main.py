@@ -373,7 +373,7 @@ class Parser():
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
                 node = Print("", [Parser.parseRelExpression(tokens)])
-                print(node)
+                #print(node)
                 #tokens.selectNext()
                 #print("pre closep")
                 #print(tokens.actual.type)

@@ -273,7 +273,7 @@ class Parser():
                     node = BinOp("OR",[node, Parser.parseTerm(tokens)])
 
             
-            if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "SEMICOLUM":  
+            if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "SEMICOLUM" or tokens.actual.type == "EQUAL":  
                 return node
             else:
                 print("Error")
@@ -312,8 +312,8 @@ class Parser():
             node = UnOp("NOT",[Parser.parseFactor(tokens)])
             #tokens.selectNext()
         elif tokens.actual.type == "SCAN":
-            node = Scan((tokens))
-            #tokens.selectNext()
+            node = Scan("", [])
+            tokens.selectNext()
             if tokens.actual.type == "OPEN-P":
                 tokens.selectNext()
                 if tokens.actual.type == "CLOSE-P":
@@ -369,7 +369,8 @@ class Parser():
                 node = Print("", [Parser.parseRelExpression(tokens)])
                 if tokens.actual.type == "CLOSE-P":
                     tokens.selectNext()
-                    if tokens.actual.type == "SEMICOLUM":  
+                    if tokens.actual.type == "SEMICOLUM": 
+                        tokens.selectNext() 
                         return node
                     else:
                         raise error

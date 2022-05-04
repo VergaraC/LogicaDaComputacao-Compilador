@@ -1,7 +1,6 @@
 
-{
-    if (1==1) {
-        printf(1);
-        printf(2);
-    }
+
+{   
+    x = scanf();
+    printf(x);
 }

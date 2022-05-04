@@ -88,15 +88,15 @@ class Scan(Node):
     def Evaluate(self, symbolTable):
         return int(input())
 class IfOp(Node):
-    def Evaluate(self):
-        if self.children[0].Evaluate():
-            self.children[1].Evaluate()
+    def Evaluate(self, symTable):
+        if self.children[0].Evaluate(symTable):
+            self.children[1].Evaluate(symTable)
         elif len(self.children) == 3:
-            self.children[2].Evaluate()
+            self.children[2].Evaluate(symTable)
 class WhileOp(Node):
-    def Evaluate(self):
-        while self.children[0].Evaluate():
-            self.children[1].Evaluate()
+    def Evaluate(self, symTable):
+        while self.children[0].Evaluate(symTable):
+            self.children[1].Evaluate(symTable)
 class VarVal(Node):
     def Evaluate(self, symbolTable):
         return symbolTable.getter(self.value)
@@ -336,8 +336,9 @@ class Parser():
 
     @staticmethod
     def parseStatement(tokens):
-        #print(tokens.actual.type)
-        #print(tokens.actual.value)
+        print("startting statement")
+        print(tokens.actual.type)
+        print(tokens.actual.value)
         node = None
         
         if tokens.actual.type == "VAR":
@@ -384,7 +385,7 @@ class Parser():
                     #print(tokens.actual.type)
                     #print(tokens.actual.value)
                     if tokens.actual.type == "SEMICOLUM":
-                        tokens.selectNext()
+                        #tokens.selectNext()
                         #print(tokens.actual.type)
                         #print(tokens.actual.value)
                         #print("return")
@@ -426,7 +427,7 @@ class Parser():
                         node3 = Parser.parseStatement(tokens)
                         node = IfOp("", [node1,node2,node3])
                     else:  
-                        node = WhileOp("", [node1,node2])
+                        node = IfOp("", [node1,node2])
                     return node
                 else:
                     raise error
@@ -464,16 +465,16 @@ class Parser():
         if tokens.actual.type == "OPEN-BR":
             children = []
             tokens.selectNext()
-            #print(tokens.actual.type)
-            #print(tokens.actual.value)
+            print(tokens.actual.type)
+            print(tokens.actual.value)
             while tokens.actual.type != "CLOSE-BR":
                 if(tokens.actual.type == "EOF"):
                     raise error
                 
                 node = Parser.parseStatement(tokens)
-                #print("Statement out")
-                #print(tokens.actual.type)
-                #print(tokens.actual.value)
+                print("Statement out")
+                print(tokens.actual.type)
+                print(tokens.actual.value)
                 children.append(node)
             #print("while out")
             #print(tokens.actual.type)

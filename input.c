@@ -1,5 +1,7 @@
 
 {
-    if (1==1)
-      printf(1);
+    if (1==1) {
+        printf(1);
+        printf(2);
+    }
 }

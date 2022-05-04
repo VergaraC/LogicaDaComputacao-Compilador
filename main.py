@@ -365,30 +365,11 @@ class Parser():
                 raise error
         elif tokens.actual.type == "PRINT":
             tokens.selectNext()
-            #print("dentro do print")
-            #print(tokens.actual.type)
-            #print(tokens.actual.value)
             if tokens.actual.type == "OPEN-P":
-                #okens.selectNext() n precisa pq no expression ele pega
-                #print("pre parse")
-                #print(tokens.actual.type)
-                #print(tokens.actual.value)
                 node = Print("", [Parser.parseRelExpression(tokens)])
-                #print(node)
-                #tokens.selectNext()
-                #print("pre closep")
-                #print(tokens.actual.type)
-                #print(tokens.actual.value)
                 if tokens.actual.type == "CLOSE-P":
-                    #print("closep")
                     tokens.selectNext()
-                    #print(tokens.actual.type)
-                    #print(tokens.actual.value)
-                    if tokens.actual.type == "SEMICOLUM":
-                        #tokens.selectNext()
-                        #print(tokens.actual.type)
-                        #print(tokens.actual.value)
-                        #print("return")
+                    if tokens.actual.type == "SEMICOLUM":  
                         return node
                     else:
                         raise error
@@ -421,7 +402,10 @@ class Parser():
                 if tokens.actual.type == "CLOSE-P":
                     tokens.selectNext()
                     node2 = Parser.parseStatement(tokens)
-                    tokens.selectNext()
+                    #print("ff")
+                    #print(tokens.actual.type)
+                    #print(tokens.actual.value)
+                    
                     if tokens.actual.type == "ELSE":
                         tokens.selectNext()
                         node3 = Parser.parseStatement(tokens)
@@ -462,8 +446,9 @@ class Parser():
             ###print("T:  ",tokens.actual.type)
         #print(tokens.actual.type)
         #print(tokens.actual.value)
+        children = []
         if tokens.actual.type == "OPEN-BR":
-            children = []
+            
             tokens.selectNext()
             #print(tokens.actual.type)
             #print(tokens.actual.value)
@@ -481,11 +466,12 @@ class Parser():
             #print(tokens.actual.value)
             node = Block("", children)
             tokens.selectNext()
-            return node
+            
         else:
             #print(tokens.actual.type)
             #print(tokens.actual.value)
             raise error
+        return node
 
     def run(origin):
         tokens = Tokenizer(origin)

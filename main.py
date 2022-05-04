@@ -437,6 +437,7 @@ class Parser():
             #print(tokens.actual.type)
             #print(tokens.actual.value)
             node = Parser.parseBlock(tokens)
+            return node
 
     @staticmethod
     def parseRelExpression(tokens):

@@ -213,13 +213,13 @@ class Tokenizer():
             
             if char == "printf":
                 self.actual = Token("PRINT",char)
-            if char == "scanf":
+            elif char == "scanf":
                 self.actual = Token("SCAN",char)
-            if char == "if":
+            elif char == "if":
                 self.actual = Token("IF",char)
-            if char == "else":
+            elif char == "else":
                 self.actual = Token("ELSE",char)
-            if char == "while":
+            elif char == "while":
                 self.actual = Token("WHILE",char)
             else:
                 self.actual = Token("VAR",char)
@@ -252,7 +252,8 @@ class Parser():
         
     @staticmethod
     def parseExpression(tokens):
-
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)     
         node = Parser.parseTerm(tokens)
         #Parser.tokens.selectNext()
         if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "OR":
@@ -287,10 +288,10 @@ class Parser():
 
     @staticmethod
     def parseFactor(tokens):
-        #tokens.selectNext()
-        print("startting factor")
-        print(tokens.actual.type)
-        print(tokens.actual.value)
+        tokens.selectNext()
+        #print("startting factor")
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)
         if tokens.actual.type == "NUMBER":
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
@@ -308,7 +309,7 @@ class Parser():
             #tokens.selectNext()
         elif tokens.actual.type == "SCAN":
             node = Scan((tokens))
-            tokens.selectNext()
+            #tokens.selectNext()
             if tokens.actual.type == "OPEN-P":
                 tokens.selectNext()
                 if tokens.actual.type == "CLOSE-P":
@@ -324,8 +325,8 @@ class Parser():
             else:
                 raise error
         else:
-            print(tokens.actual.type)
-            print(tokens.actual.value)
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             raise error
         return node
 
@@ -338,6 +339,7 @@ class Parser():
         if tokens.actual.type == "VAR":
             varName = tokens.actual.value
             tokens.selectNext()
+            #print("var ")
             
             if tokens.actual.type == "ASSINGMENT":
                 
@@ -430,7 +432,7 @@ class Parser():
 
     @staticmethod
     def parseRelExpression(tokens):
-        tokens.selectNext()
+        #tokens.selectNext()
         node = Parser.parseExpression(tokens)
         if tokens.actual.type == "EQUAL":
             node = BinOp("EQUAL",[node, Parser.parseExpression(tokens)])

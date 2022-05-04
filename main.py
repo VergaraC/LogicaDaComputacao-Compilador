@@ -81,6 +81,7 @@ class Assignement(Node):
         pass
 class Print(Node):
     def Evaluate(self, symbolTable):
+        
         print(int(self.children[0].Evaluate(symbolTable)))
         pass
 class Scan(Node):
@@ -102,6 +103,7 @@ class VarVal(Node):
         
 class Block(Node):
     def Evaluate(self, symbolTable):
+        #print(self.children)
         for i in self.children:
             i.Evaluate(symbolTable)
         pass
@@ -295,6 +297,8 @@ class Parser():
         if tokens.actual.type == "NUMBER":
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
         elif tokens.actual.type == "VAR":
             node = VarVal(tokens.actual.value,[])
             tokens.selectNext()
@@ -369,6 +373,7 @@ class Parser():
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
                 node = Print("", [Parser.parseRelExpression(tokens)])
+                print(node)
                 #tokens.selectNext()
                 #print("pre closep")
                 #print(tokens.actual.type)
@@ -428,6 +433,9 @@ class Parser():
             else:
                 raise error
         else:
+            #print("pre chamar block")
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             node = Parser.parseBlock(tokens)
 
     @staticmethod
@@ -446,7 +454,7 @@ class Parser():
 
     @staticmethod
     def parseBlock(tokens):
-        tokens.selectNext()
+        #tokens.selectNext()
         ###while tokens.actual.type != "EOF":
             ###tokens.selectNext()
             ###print("T:  ",tokens.actual.type)
@@ -479,6 +487,7 @@ class Parser():
 
     def run(origin):
         tokens = Tokenizer(origin)
+        tokens.selectNext()
         node = Parser.parseBlock(tokens)
         #resultado = Parser.parseExpression(tokens).Evaluate()
         if tokens.actual.type != "EOF":

@@ -343,7 +343,7 @@ class Parser():
             
             if tokens.actual.type == "ASSINGMENT":
                 
-                print("assigment ")
+                #print("assigment ")
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
                 node = Assignement("", [varName, Parser.parseRelExpression(tokens)])

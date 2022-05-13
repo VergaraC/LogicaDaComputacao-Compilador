@@ -89,37 +89,40 @@ class BinOp(Node):
             raise error
 class UnOp(Node):
     def Evaluate(self, symbolTable):
-        r = 0
-        if self.value == "PLUS":
-            r += self.children[0].Evaluate(symbolTable)
-            return r
-        elif self.value == "MINUS":
-            r -= self.children[0].Evaluate(symbolTable)
-            return r
-        elif self.value == "NOT":
-            r = not self.children[0].Evaluate(symbolTable)
-            return r
+        r = list(self.children[0].Evaluate(symbolTable))
+        if r[1] == "INT":
+            if self.value == "PLUS":
+                return tuple(r)
+            elif self.value == "MINUS":
+                r[0] = r[0]*(-1)
+                return tuple(r)
+            elif self.value == "NOT":
+                r[0] = not(r[0])
+                return tuple(r)
+            else:
+                raise error
         else:
             raise error
 class IntVal(Node):
     def Evaluate(self, symbolTable):
-        return self.value
+        return (self.value, "INT")
 class NoOp(Node):
     def Evaluate(self, symbolTable):
         pass
 
 class Assignement(Node):
     def Evaluate(self, symbolTable):
-        symbolTable.setter(self.children[0], self.children[1].Evaluate(symbolTable))
+        symbolTable.createVar(self.children[0].value, "INT")
+        symbolTable.setter(self.children[0], self.children[1].Evaluate(symbolTable)[0], self.children[1].Evaluate(symbolTable)[1])
         pass
 class Print(Node):
     def Evaluate(self, symbolTable):
         
-        print(int(self.children[0].Evaluate(symbolTable)))
+        print(self.children[0].Evaluate(symbolTable)[0])
         pass
 class Scan(Node):
     def Evaluate(self, symbolTable):
-        return int(input())
+        return (int(input()), "INT")
 class IfOp(Node):
     def Evaluate(self, symTable):
         if self.children[0].Evaluate(symTable):

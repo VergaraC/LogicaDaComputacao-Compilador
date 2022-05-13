@@ -10,13 +10,27 @@ class Token():
 
 class SymbolTable():
     symbolTable = dict()
-    def setter(self,var, value):
-        self.symbolTable[var] = value
-        pass
+    def setter(self,var, value, type):
+        if var in self.symbolTable.keys():
+            if self.symbolTable[var][1] == type:
+
+                ass = list(self.symbolTable[var])
+                ass[0] = value
+                self.symbolTable[var] = tuple(ass)
+                pass
+            else:
+                raise error
+        else:
+            raise error
     def getter(self,var):
         if var in self.symbolTable.keys():
             return self.symbolTable[var]
         raise error
+    def createVar(self, var, type):
+        if var in self.symbolTable.keys():
+            raise error
+        else:
+            self.symbolTable[var] = (None, type)
 
 
 class Node():
@@ -28,29 +42,48 @@ class Node():
 
 class BinOp(Node):
     def Evaluate(self, symbolTable):
-        if self.value == "PLUS":
-            return int(self.children[0].Evaluate(symbolTable)) + int(self.children[1].Evaluate(symbolTable))
+        if self.value == '.':
+            return (str(result[0]) + str(result[1]), "STR")
 
-        elif self.value == "MINUS":
-            return int(self.children[0].Evaluate(symbolTable)) - int(self.children[1].Evaluate(symbolTable))
+        elif self.children[0].Evaluate(symbolTable)[1] == "INT" and self.children[1].Evaluate(symbolTable)[1] == "INT":
+            if self.value == "PLUS":
+                return (int(self.children[0].Evaluate(symbolTable)[0]) + int(self.children[1].Evaluate(symbolTable)[0]), "INT")
 
-        elif self.value == "MULTIPLICATION":
-            return int(self.children[0].Evaluate(symbolTable)) * int(self.children[1].Evaluate(symbolTable))
+            elif self.value == "MINUS":
+                return (int(self.children[0].Evaluate(symbolTable)[0]) - int(self.children[1].Evaluate(symbolTable)[0]), "INT")
 
-        elif self.value == "DIVISION":
-            return int(self.children[0].Evaluate(symbolTable)) / int(self.children[1].Evaluate(symbolTable))
+            elif self.value == "MULTIPLICATION":
+                return (int(self.children[0].Evaluate(symbolTable)[0]) * int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+
+            elif self.value == "DIVISION":
+                return (int(self.children[0].Evaluate(symbolTable)[0]) / int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+            
+            elif self.value == "AND":
+                return (int(self.children[0].Evaluate(symbolTable)[0]) and int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+            elif self.value == "OR":
+                return (int(self.children[0].Evaluate(symbolTable)[0]) or int(self.children[1].Evaluate(symbolTable)[0]), "INT")
         
-        elif self.value == "AND":
-            return int(self.children[0].Evaluate(symbolTable)) and int(self.children[1].Evaluate(symbolTable))
-        elif self.value == "OR":
-            return int(self.children[0].Evaluate(symbolTable)) or int(self.children[1].Evaluate(symbolTable))
-        elif self.value == "EQUAL":
-            return int(self.children[0].Evaluate(symbolTable)) == int(self.children[1].Evaluate(symbolTable))
-        elif self.value == "GREATER":
-            return int(self.children[0].Evaluate(symbolTable)) > int(self.children[1].Evaluate(symbolTable))
-        elif self.value == "LESS":
-            return int(self.children[0].Evaluate(symbolTable)) < int(self.children[1].Evaluate(symbolTable))
-        
+        elif self.children[0].Evaluate(symbolTable)[1] == self.children[1].Evaluate(symbolTable)[1]:
+
+            if self.value == "EQUAL":
+                if int(self.children[0].Evaluate(symbolTable)[0]) == int(self.children[1].Evaluate(symbolTable)):
+                    return (1, "INT")
+                else:
+                    return (0, "INT")
+
+            elif self.value == "GREATER":
+                if int(self.children[0].Evaluate(symbolTable)[0]) > int(self.children[1].Evaluate(symbolTable)):
+                    return (1, "INT")
+                else:
+                    return (0, "INT")
+
+            elif self.value == "LESS":
+                if int(self.children[0].Evaluate(symbolTable)[0]) < int(self.children[1].Evaluate(symbolTable)):
+                    return (1, "INT")
+                else:
+                    return (0, "INT")
+            else:
+                raise error
     
         else:
             raise error
@@ -142,6 +175,10 @@ class Tokenizer():
             self.position+=1
             self.actual = Token("DIVISION","")
             return self.actual
+        elif self.origin[self.position] == ".":
+            self.position+=1
+            self.actual = Token("CONCAT","")
+            return self.actual
         elif self.origin[self.position] == "(":
             self.position+=1
             self.actual = Token("OPEN-P","")
@@ -223,11 +260,26 @@ class Tokenizer():
                 self.actual = Token("ELSE",char)
             elif char == "while":
                 self.actual = Token("WHILE",char)
+            elif char == "int":
+                self.actual = Token("VarType","INT")
+            elif char == "string":
+                self.actual = Token("VarType","STRING")
             else:
                 self.actual = Token("VAR",char)
             return self.actual
+        elif self.origin[self.position] == '"':
+            self.position += 1
+            char = ""
+            while self.origin[self.position] != '"' and len(self.origin) > self.position:
+                char += self.origin[self.position]
+                self.position += 1
+            self.position += 1 # tirando " final
+            self.actual = Token("STRING",char)
+
+            return self.actual
         else:
             raise error
+
 
 class PrePro():
     def filter(origin):

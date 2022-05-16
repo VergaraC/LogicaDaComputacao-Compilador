@@ -325,9 +325,9 @@ class Parser():
         #print(tokens.actual.value)     
         node = Parser.parseTerm(tokens)
         #Parser.tokens.selectNext()
-        if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "OR":
+        if tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "OR" or tokens.actual.type == "CONCAT":
                 
-            while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "OR":
+            while tokens.actual.type == "PLUS" or tokens.actual.type == "MINUS" or tokens.actual.type == "OR" or tokens.actual.type == "CONCAT":
                 if tokens.actual.type == "PLUS":
                     #print("pegou plus")
                     node = BinOp("PLUS",[node, Parser.parseTerm(tokens)])
@@ -338,6 +338,8 @@ class Parser():
 
                 elif tokens.actual.type == "OR":
                     node = BinOp("OR",[node, Parser.parseTerm(tokens)])
+                elif tokens.actual.type == "CONCAT":
+                    node = BinOp("CONCAT",[node, Parser.parseTerm(tokens)])
 
             
             if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "SEMICOLUM" or tokens.actual.type == "EQUAL":  
@@ -361,11 +363,14 @@ class Parser():
         #print("startting factor")
         #print(tokens.actual.type)
         #print(tokens.actual.value)
-        if tokens.actual.type == "NUMBER":
+        if tokens.actual.value == "INT":
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
             #print(tokens.actual.type)
             #print(tokens.actual.value)
+        if tokens.actual.value == "STR":
+            node = StrVal(tokens.actual.value,[])
+            tokens.selectNext()
         elif tokens.actual.type == "VAR":
             node = VarVal(tokens.actual.value,[])
             tokens.selectNext()
@@ -409,16 +414,14 @@ class Parser():
         node = None
         
         if tokens.actual.type == "VAR":
-            varName = tokens.actual.value
+            node = VarVal(tokens.actual.value, [])
             tokens.selectNext()
             #print("var ")
-            
             if tokens.actual.type == "ASSINGMENT":
-                
                 #print("assigment ")
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
-                node = Assignement("", [varName, Parser.parseRelExpression(tokens)])
+                node = Assignement("", [node, Parser.parseRelExpression(tokens)])
                 #tokens.selectNext()
                 if tokens.actual.type == "SEMICOLUM":
                         #tokens.selectNext()
@@ -428,6 +431,21 @@ class Parser():
                         return node
                 else:
                     raise error
+            else:
+                raise error
+        elif tokens.actual.type == "VARTYPE":
+            node = VarDecl(tokens.actual.value, [])
+            tokens.selectNext()
+            if tokens.actual.type == "VAR":
+                node.children.append(tokens.actual.value)
+                tokens.selectNext()
+                while tokens.actual.type == "COMMA":
+                    tokens.selectNext()
+                    if tokens.actual.type == "VAR":
+                        node.children.append(tokens.actual.value)
+                        tokens.selectNext()
+                    else:
+                        raise error
             else:
                 raise error
         elif tokens.actual.type == "PRINT":

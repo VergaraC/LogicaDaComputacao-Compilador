@@ -136,6 +136,14 @@ class WhileOp(Node):
 class VarVal(Node):
     def Evaluate(self, symbolTable):
         return symbolTable.getter(self.value)
+
+class VarDecl(Node):
+    def Evaluate(self, symbolTable):
+        for i in self.children:
+            symbolTable.createVar(i, self.value)
+class StrVal(Node):
+    def Evaluate(self, symbolTable):
+        return (self.value, "STR")
         
 class Block(Node):
     def Evaluate(self, symbolTable):
@@ -216,6 +224,10 @@ class Tokenizer():
         elif self.origin[self.position] == ";":
             self.position+=1
             self.actual = Token("SEMICOLUM","")
+            return self.actual
+        elif self.origin[self.position] == ",":
+            self.position+=1
+            self.actual = Token("COMMA","")
             return self.actual
         elif self.origin[self.position] == "=":
             self.position+=1

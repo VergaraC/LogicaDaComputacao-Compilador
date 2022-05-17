@@ -56,7 +56,7 @@ class BinOp(Node):
         # print(self.children[0].Evaluate(symbolTable))
         # print(self.children[1].Evaluate(symbolTable))
         
-        if self.value == '.':
+        if self.value == "CONCAT":
             return (str(r1[0]) + str(r2[0]), "STR")
 
         elif r1[1] == "INT" and r2[1] == "INT":
@@ -80,23 +80,27 @@ class BinOp(Node):
         if r1[1] == r2[1]:
 
             if self.value == "EQUAL":
-                if int(r1[0]) == int(r2[0]):
+                if r1[0] == r2[0]:
                     return (1, "INT")
                 else:
                     return (0, "INT")
 
             elif self.value == "GREATER":
-                if int(r1[0]) > int(r2[0]):
+                if r1[0] > r2[0]:
                     return (1, "INT")
                 else:
                     return (0, "INT")
 
             elif self.value == "LESS":
-                if int(r1[0]) < int(r2[0]):
+                if r1[0] < r2[0]:
                     return (1, "INT")
                 else:
                     return (0, "INT")
             else:
+                print("ERROR")
+                print(self.value)
+                print(r1)
+                print(r2)
                 raise error
     
         else:
@@ -138,12 +142,18 @@ class Assignement(Node):
         #print("ASS")
         #print(self.children)
         ass = self.children[1].Evaluate(symbolTable)
+        #print(ass[1])
+        #print(self.children[0].Evaluate(symbolTable)[1])
         symbolTable.setter(self.children[0].value, ass[0], ass[1])
         pass
 class Print(Node):
     def Evaluate(self, symbolTable):
         #print("PRINT")
-        print(int(self.children[0].Evaluate(symbolTable)[0]))
+        a = self.children[0].Evaluate(symbolTable)[0]
+        if type(a) is str:
+            print(a)
+        else:
+            print(int(a))
         pass
 class Scan(Node):
     def Evaluate(self, symbolTable):
@@ -174,7 +184,7 @@ class VarDecl(Node):
 class StrVal(Node):
     def Evaluate(self, symbolTable):
         #print("STRVAL")
-        return (self.value, "STR")
+        return (self.value, "STRING")
         
 class Block(Node):
     def Evaluate(self, symbolTable):
@@ -313,7 +323,7 @@ class Tokenizer():
                 self.actual = Token("WHILE",char)
             elif char == "int":
                 self.actual = Token("VARTYPE","INT")
-            elif char == "string":
+            elif char == "str":
                 self.actual = Token("VARTYPE","STRING")
             else:
                 self.actual = Token("VAR",char)
@@ -396,16 +406,16 @@ class Parser():
     @staticmethod
     def parseFactor(tokens):
         tokens.selectNext()
-        # print("startting factor")
-        # print(tokens.actual.type)
-        # print(tokens.actual.value)
+        #print("startting factor")
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)
         if tokens.actual.type == "NUMBER":
             # print("int")
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
             # print(tokens.actual.type)
             # print(tokens.actual.value)
-        elif tokens.actual.value == "STR": ### Sepa vai da merda
+        elif tokens.actual.type == "STRING": ### Sepa vai da merda
             node = StrVal(tokens.actual.value,[])
             tokens.selectNext()
         elif tokens.actual.type == "VAR":
@@ -445,12 +455,12 @@ class Parser():
 
     @staticmethod
     def parseStatement(tokens):
-        #print("startting statement")
+        #print("starting statement")
         #print(tokens.actual.type)
         #print(tokens.actual.value)
         node = None
-        # print(tokens.actual.type)
-        # print(tokens.actual.value)
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)
         
         if tokens.actual.type == "VAR":
             #print(tokens.actual.type)

@@ -11,6 +11,8 @@ class Token():
 class SymbolTable():
     symbolTable = dict()
     def setter(self,var, value, type):
+        # print("Setter")
+        # print(var)
         if var in self.symbolTable.keys():
             if self.symbolTable[var][1] == type:
 
@@ -42,43 +44,55 @@ class Node():
 
 class BinOp(Node):
     def Evaluate(self, symbolTable):
+        print("BINOP")
+        print(self.children)
+        r1 = self.children[0].Evaluate(symbolTable)
+        print(r1)
+        r2 = self.children[1].Evaluate(symbolTable)
+        print(r2)
+        print(self.value)
+        # print(self.children[0].Evaluate(symbolTable))
+        # print(self.children[1].Evaluate(symbolTable))
+        # print(self.children[0].Evaluate(symbolTable))
+        # print(self.children[1].Evaluate(symbolTable))
+        
         if self.value == '.':
-            return (str(result[0]) + str(result[1]), "STR")
+            return (str(r1[0]) + str(r2[0]), "STR")
 
-        elif self.children[0].Evaluate(symbolTable)[1] == "INT" and self.children[1].Evaluate(symbolTable)[1] == "INT":
+        elif r1[1] == "INT" and r2[1] == "INT":
             if self.value == "PLUS":
-                return (int(self.children[0].Evaluate(symbolTable)[0]) + int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+                return (int(r1[0]) + int(r2[0]), "INT")
 
             elif self.value == "MINUS":
-                return (int(self.children[0].Evaluate(symbolTable)[0]) - int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+                return (int(r1[0]) - int(r2[0]), "INT")
 
             elif self.value == "MULTIPLICATION":
-                return (int(self.children[0].Evaluate(symbolTable)[0]) * int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+                return (int(r1[0]) * int(r2[0]), "INT")
 
             elif self.value == "DIVISION":
-                return (int(self.children[0].Evaluate(symbolTable)[0]) / int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+                return (int(r1[0]) / int(r2[0]), "INT")
             
             elif self.value == "AND":
-                return (int(self.children[0].Evaluate(symbolTable)[0]) and int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+                return (int(r1[0]) and int(r2[0]), "INT")
             elif self.value == "OR":
-                return (int(self.children[0].Evaluate(symbolTable)[0]) or int(self.children[1].Evaluate(symbolTable)[0]), "INT")
+                return (int(r1[0]) or int(r2[0]), "INT")
         
-        elif self.children[0].Evaluate(symbolTable)[1] == self.children[1].Evaluate(symbolTable)[1]:
+        if r1[1] == r2[1]:
 
             if self.value == "EQUAL":
-                if int(self.children[0].Evaluate(symbolTable)[0]) == int(self.children[1].Evaluate(symbolTable)):
+                if int(r1[0]) == int(r2[0]):
                     return (1, "INT")
                 else:
                     return (0, "INT")
 
             elif self.value == "GREATER":
-                if int(self.children[0].Evaluate(symbolTable)[0]) > int(self.children[1].Evaluate(symbolTable)):
+                if int(r1[0]) > int(r2[0]):
                     return (1, "INT")
                 else:
                     return (0, "INT")
 
             elif self.value == "LESS":
-                if int(self.children[0].Evaluate(symbolTable)[0]) < int(self.children[1].Evaluate(symbolTable)):
+                if int(r1[0]) < int(r2[0]):
                     return (1, "INT")
                 else:
                     return (0, "INT")
@@ -89,7 +103,14 @@ class BinOp(Node):
             raise error
 class UnOp(Node):
     def Evaluate(self, symbolTable):
-        r = list(self.children[0].Evaluate(symbolTable))
+        print("UNOP")
+        print(self.value)
+        print(self.children)
+        print("eae")
+        r = self.children[0].Evaluate(symbolTable)
+        print(r)
+        print("hm")
+        r = list(r)
         if r[1] == "INT":
             if self.value == "PLUS":
                 return tuple(r)
@@ -105,51 +126,65 @@ class UnOp(Node):
             raise error
 class IntVal(Node):
     def Evaluate(self, symbolTable):
+        print("INTVAL")
         return (self.value, "INT")
 class NoOp(Node):
     def Evaluate(self, symbolTable):
+        print("NOOP")
         pass
 
 class Assignement(Node):
     def Evaluate(self, symbolTable):
-        symbolTable.createVar(self.children[0].value, "INT")
-        symbolTable.setter(self.children[0], self.children[1].Evaluate(symbolTable)[0], self.children[1].Evaluate(symbolTable)[1])
+        print("ASS")
+        print(self.children)
+        ass = self.children[1].Evaluate(symbolTable)
+        symbolTable.setter(self.children[0].value, ass[0], ass[1])
         pass
 class Print(Node):
     def Evaluate(self, symbolTable):
-        
+        print("PRINT")
         print(self.children[0].Evaluate(symbolTable)[0])
         pass
 class Scan(Node):
     def Evaluate(self, symbolTable):
+        print("SCAN")
         return (int(input()), "INT")
 class IfOp(Node):
     def Evaluate(self, symTable):
-        if self.children[0].Evaluate(symTable):
+        print("IF")
+        if self.children[0].Evaluate(symTable)[0]:
             self.children[1].Evaluate(symTable)
         elif len(self.children) == 3:
             self.children[2].Evaluate(symTable)
 class WhileOp(Node):
     def Evaluate(self, symTable):
-        while self.children[0].Evaluate(symTable):
+        print("WHILE")
+        while self.children[0].Evaluate(symTable)[0]:
             self.children[1].Evaluate(symTable)
 class VarVal(Node):
     def Evaluate(self, symbolTable):
+        print("VARVAL")
         return symbolTable.getter(self.value)
 
 class VarDecl(Node):
     def Evaluate(self, symbolTable):
+        print("VARDECL")
         for i in self.children:
             symbolTable.createVar(i, self.value)
 class StrVal(Node):
     def Evaluate(self, symbolTable):
+        print("STRVAL")
         return (self.value, "STR")
         
 class Block(Node):
     def Evaluate(self, symbolTable):
         #print(self.children)
+        print("BLOCK")
+        print(self.children)
         for i in self.children:
+            print(i)
             i.Evaluate(symbolTable)
+            print("foi")
         pass
 class Tokenizer():
     def __init__(self, origin):
@@ -237,6 +272,7 @@ class Tokenizer():
             else:
                 self.actual = Token("ASSINGMENT","")
             return self.actual
+            
         elif self.origin[self.position].isnumeric():
             algarismos = self.origin[self.position]
             self.position += 1
@@ -276,9 +312,9 @@ class Tokenizer():
             elif char == "while":
                 self.actual = Token("WHILE",char)
             elif char == "int":
-                self.actual = Token("VarType","INT")
+                self.actual = Token("VARTYPE","INT")
             elif char == "string":
-                self.actual = Token("VarType","STRING")
+                self.actual = Token("VARTYPE","STRING")
             else:
                 self.actual = Token("VAR",char)
             return self.actual
@@ -299,8 +335,8 @@ class Tokenizer():
 class PrePro():
     def filter(origin):
         origin = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,origin)
-        origin3 = re.sub(' ', '', origin)
-        return origin3
+        #origin3 = re.sub(' ', '', origin)
+        return origin
 
 class Parser():
     @staticmethod
@@ -345,9 +381,9 @@ class Parser():
             if tokens.actual.type == "EOF" or tokens.actual.type == "CLOSE-P" or tokens.actual.type == "SEMICOLUM" or tokens.actual.type == "EQUAL":  
                 return node
             else:
-                print("Error")
-                print(tokens.actual.type)
-                print(tokens.actual.value)
+                # print("Error")
+                # print(tokens.actual.type)
+                # print(tokens.actual.value)
             
                 raise error
         else:
@@ -360,15 +396,16 @@ class Parser():
     @staticmethod
     def parseFactor(tokens):
         tokens.selectNext()
-        #print("startting factor")
-        #print(tokens.actual.type)
-        #print(tokens.actual.value)
-        if tokens.actual.value == "INT":
+        # print("startting factor")
+        # print(tokens.actual.type)
+        # print(tokens.actual.value)
+        if tokens.actual.type == "NUMBER":
+            # print("int")
             node = IntVal(tokens.actual.value,[])
             tokens.selectNext()
-            #print(tokens.actual.type)
-            #print(tokens.actual.value)
-        if tokens.actual.value == "STR":
+            # print(tokens.actual.type)
+            # print(tokens.actual.value)
+        elif tokens.actual.value == "STR": ### Sepa vai da merda
             node = StrVal(tokens.actual.value,[])
             tokens.selectNext()
         elif tokens.actual.type == "VAR":
@@ -412,11 +449,17 @@ class Parser():
         #print(tokens.actual.type)
         #print(tokens.actual.value)
         node = None
+        # print(tokens.actual.type)
+        # print(tokens.actual.value)
         
         if tokens.actual.type == "VAR":
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             node = VarVal(tokens.actual.value, [])
             tokens.selectNext()
             #print("var ")
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             if tokens.actual.type == "ASSINGMENT":
                 #print("assigment ")
                 #print(tokens.actual.type)
@@ -434,11 +477,19 @@ class Parser():
             else:
                 raise error
         elif tokens.actual.type == "VARTYPE":
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
+            #print("Nova var")
+            # print("EAE")
             node = VarDecl(tokens.actual.value, [])
             tokens.selectNext()
+            #print("Agora var")
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
             if tokens.actual.type == "VAR":
                 node.children.append(tokens.actual.value)
                 tokens.selectNext()
+                #print("agota comma")
                 while tokens.actual.type == "COMMA":
                     tokens.selectNext()
                     if tokens.actual.type == "VAR":
@@ -446,8 +497,18 @@ class Parser():
                         tokens.selectNext()
                     else:
                         raise error
+
+                if tokens.actual.type == "SEMICOLUM": 
+                    tokens.selectNext() 
+                    return node
+                else:
+                    raise error
+                   
+                #print("saiu while")
             else:
                 raise error
+            # print("saiu")
+
         elif tokens.actual.type == "PRINT":
             tokens.selectNext()
             if tokens.actual.type == "OPEN-P":
@@ -465,6 +526,8 @@ class Parser():
                 raise error
         elif tokens.actual.type == "SEMICOLUM":
             tokens.selectNext()
+            # print('NODE')
+            # print(node)
             if(node == None):
                 node = NoOp("", [])
             return node
@@ -488,10 +551,15 @@ class Parser():
                 if tokens.actual.type == "CLOSE-P":
                     tokens.selectNext()
                     node2 = Parser.parseStatement(tokens)
-                    #print("ff")
-                    #print(tokens.actual.type)
-                    #print(tokens.actual.value)
-                    
+                    # print("ff")
+                    # print(tokens.actual.type)
+                    # print(tokens.actual.value)
+                    # print("deveria ser else")
+                    if tokens.actual.type == "SEMICOLUM":
+                        tokens.selectNext()
+                        # print(tokens.actual.type)
+                        # print(tokens.actual.value)
+                        # print("deveria ser else")
                     if tokens.actual.type == "ELSE":
                         tokens.selectNext()
                         node3 = Parser.parseStatement(tokens)
@@ -509,6 +577,7 @@ class Parser():
             #print(tokens.actual.value)
             node = Parser.parseBlock(tokens)
             return node
+        # print("saindo Statement")
 
     @staticmethod
     def parseRelExpression(tokens):
@@ -527,11 +596,14 @@ class Parser():
     @staticmethod
     def parseBlock(tokens):
         #tokens.selectNext()
-        ###while tokens.actual.type != "EOF":
-            ###tokens.selectNext()
-            ###print("T:  ",tokens.actual.type)
+        #while tokens.actual.type != "EOF":
+            #tokens.selectNext()
+            #print("T:  ",tokens.actual.type)
         #print(tokens.actual.type)
         #print(tokens.actual.value)
+        # print("Novo Block")
+        # print(tokens.actual.type)
+        # print(tokens.actual.value)
         children = []
         if tokens.actual.type == "OPEN-BR":
             
@@ -543,6 +615,7 @@ class Parser():
                     raise error
                 
                 node = Parser.parseStatement(tokens)
+                # print(node)
                 #print("Statement out")
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)

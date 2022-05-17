@@ -126,65 +126,65 @@ class UnOp(Node):
             raise error
 class IntVal(Node):
     def Evaluate(self, symbolTable):
-        print("INTVAL")
+        #print("INTVAL")
         return (self.value, "INT")
 class NoOp(Node):
     def Evaluate(self, symbolTable):
-        print("NOOP")
+        #print("NOOP")
         pass
 
 class Assignement(Node):
     def Evaluate(self, symbolTable):
-        print("ASS")
-        print(self.children)
+        #print("ASS")
+        #print(self.children)
         ass = self.children[1].Evaluate(symbolTable)
         symbolTable.setter(self.children[0].value, ass[0], ass[1])
         pass
 class Print(Node):
     def Evaluate(self, symbolTable):
-        print("PRINT")
-        print(self.children[0].Evaluate(symbolTable)[0])
+        #print("PRINT")
+        print(int(self.children[0].Evaluate(symbolTable)[0]))
         pass
 class Scan(Node):
     def Evaluate(self, symbolTable):
-        print("SCAN")
+        #print("SCAN")
         return (int(input()), "INT")
 class IfOp(Node):
     def Evaluate(self, symTable):
-        print("IF")
+        #print("IF")
         if self.children[0].Evaluate(symTable)[0]:
             self.children[1].Evaluate(symTable)
         elif len(self.children) == 3:
             self.children[2].Evaluate(symTable)
 class WhileOp(Node):
     def Evaluate(self, symTable):
-        print("WHILE")
+        #print("WHILE")
         while self.children[0].Evaluate(symTable)[0]:
             self.children[1].Evaluate(symTable)
 class VarVal(Node):
     def Evaluate(self, symbolTable):
-        print("VARVAL")
+        #print("VARVAL")
         return symbolTable.getter(self.value)
 
 class VarDecl(Node):
     def Evaluate(self, symbolTable):
-        print("VARDECL")
+        #print("VARDECL")
         for i in self.children:
             symbolTable.createVar(i, self.value)
 class StrVal(Node):
     def Evaluate(self, symbolTable):
-        print("STRVAL")
+        #print("STRVAL")
         return (self.value, "STR")
         
 class Block(Node):
     def Evaluate(self, symbolTable):
         #print(self.children)
-        print("BLOCK")
-        print(self.children)
+        #print("BLOCK")
+        #print(self.children)
         for i in self.children:
-            print(i)
+            #print(i)
             i.Evaluate(symbolTable)
-            print("foi")
+            #print("foi")
         pass
 class Tokenizer():
     def __init__(self, origin):

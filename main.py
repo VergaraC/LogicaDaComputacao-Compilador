@@ -44,13 +44,13 @@ class Node():
 
 class BinOp(Node):
     def Evaluate(self, symbolTable):
-        print("BINOP")
-        print(self.children)
+        #print("BINOP")
+        #print(self.children)
         r1 = self.children[0].Evaluate(symbolTable)
-        print(r1)
+        #print(r1)
         r2 = self.children[1].Evaluate(symbolTable)
-        print(r2)
-        print(self.value)
+        #print(r2)
+        #print(self.value)
         # print(self.children[0].Evaluate(symbolTable))
         # print(self.children[1].Evaluate(symbolTable))
         # print(self.children[0].Evaluate(symbolTable))
@@ -103,13 +103,13 @@ class BinOp(Node):
             raise error
 class UnOp(Node):
     def Evaluate(self, symbolTable):
-        print("UNOP")
-        print(self.value)
-        print(self.children)
-        print("eae")
+        #print("UNOP")
+        #print(self.value)
+        #print(self.children)
+        #print("eae")
         r = self.children[0].Evaluate(symbolTable)
-        print(r)
-        print("hm")
+        #print(r)
+        #print("hm")
         r = list(r)
         if r[1] == "INT":
             if self.value == "PLUS":

@@ -94,37 +94,37 @@ class BinOp(Node):
         
                 Nasm.write("ADD EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (2)
+                return (int(r1[0]) + int(r2[0]), "INT")
 
             elif self.value == "MINUS":
                 
                 Nasm.write("SUB EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (2)
+                return (int(r1[0]) - int(r2[0]), "INT")
 
             elif self.value == "MULTIPLICATION":
                 
                 Nasm.write("IMUL EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (2)
+                return (int(r1[0]) * int(r2[0]), "INT")
 
             elif self.value == "DIVISION":
                 
                 Nasm.write("IDIV EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (2)
+                return (int(r1[0]) / int(r2[0]), "INT")
             
             elif self.value == "AND":
                 
                 Nasm.write("AND EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (2)
+                return (int(r1[0]) and int(r2[0]), "INT")
 
             elif self.value == "OR":
                 
                 Nasm.write("ORR EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (2)
+                return (int(r1[0]) or int(r2[0]), "INT")
         
         if r1[1] == r2[1]:
             
@@ -132,19 +132,28 @@ class BinOp(Node):
 
                 Nasm.write("CMP EAX, EBX" + "\n")
                 Nasm.write("CALL binop_je" + "\n")
-                return (2)
+                if r1[0] == r2[0]:
+                    return (1, "INT")
+                else:
+                    return (0, "INT")
 
             elif self.value == "GREATER":
                 
                 Nasm.write("CMP EAX, EBX" + "\n")
                 Nasm.write("CALL binop_jg" + "\n")
-                return (2)
+                if r1[0] > r2[0]:
+                    return (1, "INT")
+                else:
+                    return (0, "INT")
 
             elif self.value == "LESS":
                 
                 Nasm.write("CMP EAX, EBX" + "\n")
                 Nasm.write("CALL binop_jl" + "\n")
-                return (2)
+                if r1[0] < r2[0]:
+                    return (1, "INT")
+                else:
+                    return (0, "INT")
 
             else:
                 print("ERROR")
@@ -194,7 +203,7 @@ class Assignement(Node):
         #print("ASS")
         #print(self.children)
         ass = self.children[1].Evaluate(symbolTable,Nasm)
-        #print(ass[1])
+        print(ass[1])
         #print(self.children[0].Evaluate(symbolTable,Nasm)[1])
         symbolTable.setter(self.children[0].value, ass[0], ass[1])
         get = symbolTable.getter(self.children[0].value)

@@ -208,19 +208,19 @@ class IfOp(Node):
         #print("IF")
         idIf = Nasm.getId()
         Nasm.write("IF" + idIf +": \n")
-        self.children[0].Evaluate(symTable)
+        self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")
             
         if len(self.children) == 3:
             Nasm.write("JE ELSE" + idIf + "\n")
-            self.children[1].Evaluate(symTable)
+            self.children[1].Evaluate(symTable, Nasm)
             Nasm.write("JMP EXIT" + idIf + "\n")
             Nasm.write("ELSE" + idIf + ": \n")
-            self.children[2].Evaluate(symTable)
+            self.children[2].Evaluate(symTable, Nasm)
         else:
-            self.children[1].Evaluate(symTable)
+            self.children[1].Evaluate(symTable, Nasm)
             Nasm.write("JE EXIT" + idIf + "\n")
-            self.children[1].Evaluate(symTable)
+            self.children[1].Evaluate(symTable, Nasm)
             Nasm.write("JMP EXIT" + idIf + "\n")
         Nasm.write("EXIT" +idIf+ ": \n")
 
@@ -229,10 +229,10 @@ class WhileOp(Node):
         #print("WHILE")
         idW = Nasm.newId()
         Nasm.write("LOOP" + idW + ": \n")
-        self.children[0].Evaluate(symTable)
+        self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")
         Nasm.write("JE EXIT" + idW + " \n")
-        self.children[1].Evaluate(symTable)
+        self.children[1].Evaluate(symTable, Nasm)
         Nasm.write("JMP LOOP" + idW + " \n")
         Nasm.write("EXIT" + idW + ": \n")
             
@@ -717,7 +717,8 @@ class Parser():
         if tokens.actual.type != "EOF":
             raise error
         symtable = SymbolTable()
-        return node.Evaluate(symtable)
+        Nasm = Nasm()
+        return node.Evaluate(symtable, Nasm)
 if __name__ == '__main__':
     file = sys.argv[1]
     with open(file, "r") as f:

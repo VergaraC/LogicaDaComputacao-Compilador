@@ -207,7 +207,7 @@ class Assignement(Node):
         #print(self.children[0].Evaluate(symbolTable,Nasm)[1])
         symbolTable.setter(self.children[0].value, ass[0], ass[1])
         get = symbolTable.getter(self.children[0].value)
-        Nasm.write("MOV [EBP-" + get[2] + "], EBX \n")
+        Nasm.write("MOV [EBP-" + str(get[2]) + "], EBX \n")
         pass
 class Print(Node):
     def Evaluate(self, symbolTable, Nasm):
@@ -226,40 +226,40 @@ class IfOp(Node):
     def Evaluate(self, symTable, Nasm):
         #print("IF")
         idIf = Nasm.getId()
-        Nasm.write("IF" + idIf +": \n")
+        Nasm.write("IF" + str(idIf) +": \n")
         self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")
             
         if len(self.children) == 3:
-            Nasm.write("JE ELSE" + idIf + "\n")
+            Nasm.write("JE ELSE" + str(idIf) + "\n")
             self.children[1].Evaluate(symTable, Nasm)
-            Nasm.write("JMP EXIT" + idIf + "\n")
-            Nasm.write("ELSE" + idIf + ": \n")
+            Nasm.write("JMP EXIT" + str(idIf) + "\n")
+            Nasm.write("ELSE" + str(idIf) + ": \n")
             self.children[2].Evaluate(symTable, Nasm)
         else:
             self.children[1].Evaluate(symTable, Nasm)
-            Nasm.write("JE EXIT" + idIf + "\n")
+            Nasm.write("JE EXIT" + str(idIf) + "\n")
             self.children[1].Evaluate(symTable, Nasm)
-            Nasm.write("JMP EXIT" + idIf + "\n")
-        Nasm.write("EXIT" +idIf+ ": \n")
+            Nasm.write("JMP EXIT" + str(idIf) + "\n")
+        Nasm.write("EXIT" +str(idIf)+ ": \n")
 
 class WhileOp(Node):
     def Evaluate(self, symTable, Nasm):
         #print("WHILE")
         idW = Nasm.newId()
-        Nasm.write("LOOP" + idW + ": \n")
+        Nasm.write("LOOP" + str(idW) + ": \n")
         self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")
-        Nasm.write("JE EXIT" + idW + " \n")
+        Nasm.write("JE EXIT" + str(idW) + " \n")
         self.children[1].Evaluate(symTable, Nasm)
-        Nasm.write("JMP LOOP" + idW + " \n")
-        Nasm.write("EXIT" + idW + ": \n")
+        Nasm.write("JMP LOOP" + str(idW) + " \n")
+        Nasm.write("EXIT" + str(idW) + ": \n")
             
 class VarVal(Node):
     def Evaluate(self, symbolTable, Nasm):
         #print("VARVAL")
         get = symbolTable.getter(self.value)
-        Nasm.write("MOV EBX, [EBP-" + get[2] + "] +\n")
+        Nasm.write("MOV EBX, [EBP-" + str(get[2]) + "] +\n")
 
 class VarDecl(Node):
     def Evaluate(self, symbolTable, Nasm):

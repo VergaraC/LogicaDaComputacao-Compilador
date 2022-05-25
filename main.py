@@ -225,7 +225,7 @@ class IfOp(Node):
         
     def Evaluate(self, symTable, Nasm):
         #print("IF")
-        idIf = Nasm.getId()
+        idIf = Node.getId()
         Nasm.write("IF" + str(idIf) +": \n")
         self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")
@@ -246,7 +246,7 @@ class IfOp(Node):
 class WhileOp(Node):
     def Evaluate(self, symTable, Nasm):
         #print("WHILE")
-        idW = Nasm.newId()
+        idW = Node.getId()
         Nasm.write("LOOP" + str(idW) + ": \n")
         self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")

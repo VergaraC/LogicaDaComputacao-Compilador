@@ -29,6 +29,7 @@ class NasmG():
 
 class SymbolTable():
     symbolTable = dict()
+    p = 4
     def setter(self,var, value, type):
         # print("Setter")
         # print(var)
@@ -51,8 +52,8 @@ class SymbolTable():
         if var in self.symbolTable.keys():
             raise error
         else:
-            self.symbolTable[var] = (None, type, self.pointer)
-            self.pointer += 4
+            self.symbolTable[var] = (None, type, self.p)
+            self.p += 4
 
 
 class Node():

@@ -3,14 +3,19 @@ import sys
 from os import error
 import re
 
+from dbus import NameExistsException
+
 class Token():
     def __init__(self, type,value):
         self.type = type
         self.value = value
 
 class Nasm():
+
+    file = sys.argv[1].replace('.c', '.asm')
     def __init__(self):
-        self.assembly = ""
+        with open("header.txt", "r") as h:
+            self.assembly = h.read()
         self.footer = "POP EBP \n" + "MOV EAX, 1 \n" +  "INT 0x80 \n"
         pass
     def write(self, text):
@@ -18,7 +23,7 @@ class Nasm():
         self.assembly += "\n"
 
     def dump(self):
-        f = open(file + ".asm", "w")
+        f = open(file , "w")
         f.write(self.assembly)
         f.close()
 
@@ -46,7 +51,8 @@ class SymbolTable():
         if var in self.symbolTable.keys():
             raise error
         else:
-            self.symbolTable[var] = (None, type)
+            self.symbolTable[var] = (None, type, self.pointer)
+            self.pointer += 4
 
 
 class Node():
@@ -64,20 +70,16 @@ class Node():
         return Node.id
 
 class BinOp(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("BINOP")
         #print(self.children)
         r1 = self.children[0].Evaluate(symbolTable)
+        Nasm.write("PUSH EBX")
         #print(r1)
         r2 = self.children[1].Evaluate(symbolTable)
+        Nasm.write("POP EAX")
         #print(r2)
         #print(self.value)
-        Nasm.write("MOV EBX, " + str(r1) + "\n")
-        Nasm.write("PUSH EBX + \n")
-        Nasm.write("MOV EAX, " + str(r2) + "\n")
-        Nasm.write("POP EAX + \n")
-        Nasm.write("ADD EAX, EBX + \n")
-        Nasm.write("MOV EBX, EAX + \n")
         # print(self.children[0].Evaluate(symbolTable))
         # print(self.children[1].Evaluate(symbolTable))
         # print(self.children[0].Evaluate(symbolTable))
@@ -88,78 +90,52 @@ class BinOp(Node):
 
         elif r1[1] == "INT" and r2[1] == "INT":
             if self.value == "PLUS":
-                Nasm.write("MOV EBX, " + str(r1) + "\n")
-                Nasm.write("PUSH EBX + \n")
-                Nasm.write("MOV EAX, " + str(r2) + "\n")
-                Nasm.write("POP EAX + \n")
+        
                 Nasm.write("ADD EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
 
-                return (int(r1[0]) + int(r2[0]), "INT")
-
             elif self.value == "MINUS":
-                Nasm.write("MOV EBX, " + str(r1) + "\n")
-                Nasm.write("PUSH EBX" + "\n")
-                Nasm.write("MOV EAX, " + str(r2)+ "\n")
-                Nasm.write("POP EAX" + "\n")
+                
                 Nasm.write("SUB EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (int(r1[0]) - int(r2[0]), "INT")
 
             elif self.value == "MULTIPLICATION":
-                Nasm.write("MOV EBX, " + str(r1) + "\n")
-                Nasm.write("PUSH EBX" + "\n")
-                Nasm.write("MOV EAX, " + str(r2) + "\n")
-                Nasm.write("POP EAX" + "\n")
+                
                 Nasm.write("IMUL EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (int(r1[0]) * int(r2[0]), "INT")
 
             elif self.value == "DIVISION":
-                Nasm.write("MOV EBX, " + str(r1) + "\n")
-                Nasm.write("PUSH EBX" + "\n")
-                Nasm.write("MOV EAX, " + str(r2) + "\n")
-                Nasm.write("POP EAX" + "\n")
+                
                 Nasm.write("IDIV EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (int(r1[0]) / int(r2[0]), "INT")
             
             elif self.value == "AND":
-                Nasm.write("MOV EBX, " + str(r1) + "\n")
-                Nasm.write("PUSH EBX" + "\n")
-                Nasm.write("MOV EAX, " + str(r2) + "\n")
-                Nasm.write("POP EAX" + "\n")
+                
                 Nasm.write("AND EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (int(r1[0]) and int(r2[0]), "INT")
+
             elif self.value == "OR":
-                Nasm.write("MOV EBX, " + str(r1) + "\n")
-                Nasm.write("PUSH EBX" + "\n")
-                Nasm.write("MOV EAX, " + str(r2) + "\n")
-                Nasm.write("POP EAX" + "\n")
+                
                 Nasm.write("ORR EAX, EBX" + "\n")
                 Nasm.write("MOV EBX, EAX" + "\n")
-                return (int(r1[0]) or int(r2[0]), "INT")
         
         if r1[1] == r2[1]:
-
+            
             if self.value == "EQUAL":
-                if r1[0] == r2[0]:
-                    return (1, "INT")
-                else:
-                    return (0, "INT")
+
+                Nasm.write("CMP EAX, EBX" + "\n")
+                Nasm.write("CALL binop_je" + "\n")
 
             elif self.value == "GREATER":
-                if r1[0] > r2[0]:
-                    return (1, "INT")
-                else:
-                    return (0, "INT")
+                
+                Nasm.write("CMP EAX, EBX" + "\n")
+                Nasm.write("CALL binop_jg" + "\n")
 
             elif self.value == "LESS":
-                if r1[0] < r2[0]:
-                    return (1, "INT")
-                else:
-                    return (0, "INT")
+                
+                Nasm.write("CMP EAX, EBX" + "\n")
+                Nasm.write("CALL binop_jl" + "\n")
+
             else:
                 print("ERROR")
                 print(self.value)
@@ -170,7 +146,7 @@ class BinOp(Node):
         else:
             raise error
 class UnOp(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("UNOP")
         #print(self.value)
         #print(self.children)
@@ -193,68 +169,92 @@ class UnOp(Node):
         else:
             raise error
 class IntVal(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("INTVAL")
 
         Nasm.write("MOV EBX, " + str(self.value) + "\n")
         return (self.value, "INT")
 class NoOp(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("NOOP")
         pass
 
 class Assignement(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("ASS")
         #print(self.children)
         ass = self.children[1].Evaluate(symbolTable)
         #print(ass[1])
         #print(self.children[0].Evaluate(symbolTable)[1])
         symbolTable.setter(self.children[0].value, ass[0], ass[1])
+        get = symbolTable.getter(self.children[0].value)
+        Nasm.write("MOV [EBP-" + get[2] + "], EBX \n")
         pass
 class Print(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("PRINT")
-        a = self.children[0].Evaluate(symbolTable)[0]
-        if type(a) is str:
-            print(a)
-        else:
-            print(int(a))
+        self.children[0].Evaluate(symbolTable)[0]
+        Nasm.write("PUSH EBX \n")
+        Nasm.write("CALL print \n")
+        Nasm.write("POP EBX \n")
         pass
 class Scan(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("SCAN")
         return (int(input()), "INT")
 class IfOp(Node):
-    def Evaluate(self, symTable):
+        
+    def Evaluate(self, symTable, Nasm):
         #print("IF")
-        if self.children[0].Evaluate(symTable)[0]:
+        idIf = Nasm.getId()
+        Nasm.write("IF" + idIf +": \n")
+        self.children[0].Evaluate(symTable)
+        Nasm.write("CMP EBX, False \n")
+            
+        if len(self.children) == 3:
+            Nasm.write("JE ELSE" + idIf + "\n")
             self.children[1].Evaluate(symTable)
-        elif len(self.children) == 3:
+            Nasm.write("JMP EXIT" + idIf + "\n")
+            Nasm.write("ELSE" + idIf + ": \n")
             self.children[2].Evaluate(symTable)
-class WhileOp(Node):
-    def Evaluate(self, symTable):
-        #print("WHILE")
-        while self.children[0].Evaluate(symTable)[0]:
+        else:
             self.children[1].Evaluate(symTable)
+            Nasm.write("JE EXIT" + idIf + "\n")
+            self.children[1].Evaluate(symTable)
+            Nasm.write("JMP EXIT" + idIf + "\n")
+        Nasm.write("EXIT" +idIf+ ": \n")
+
+class WhileOp(Node):
+    def Evaluate(self, symTable, Nasm):
+        #print("WHILE")
+        idW = Nasm.newId()
+        Nasm.write("LOOP" + idW + ": \n")
+        self.children[0].Evaluate(symTable)
+        Nasm.write("CMP EBX, False \n")
+        Nasm.write("JE EXIT" + idW + " \n")
+        self.children[1].Evaluate(symTable)
+        Nasm.write("JMP LOOP" + idW + " \n")
+        Nasm.write("EXIT" + idW + ": \n")
+            
 class VarVal(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("VARVAL")
-        return symbolTable.getter(self.value)
+        get = symbolTable.getter(self.value)
+        Nasm.write("MOV EBX, [EBP-" + get[2] + "] +\n")
 
 class VarDecl(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("VARDECL")
         for i in self.children:
             Nasm.write("PUSH DWORD 0")
             symbolTable.createVar(i, self.value)
 class StrVal(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print("STRVAL")
         return (self.value, "STRING")
         
 class Block(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, Nasm):
         #print(self.children)
         #print("BLOCK")
         #print(self.children)

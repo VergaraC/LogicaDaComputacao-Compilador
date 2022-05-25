@@ -10,7 +10,7 @@ class Token():
         self.type = type
         self.value = value
 
-class Nasm():
+class NasmG():
 
     file = sys.argv[1].replace('.c', '.asm')
     def __init__(self):
@@ -717,7 +717,7 @@ class Parser():
         if tokens.actual.type != "EOF":
             raise error
         symtable = SymbolTable()
-        Nasm = Nasm()
+        Nasm = NasmG()
         return node.Evaluate(symtable, Nasm)
 if __name__ == '__main__':
     file = sys.argv[1]

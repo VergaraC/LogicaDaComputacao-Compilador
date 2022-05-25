@@ -317,19 +317,17 @@ class IfOp(Node):
         Nasm.write("IF" + str(idIf) + ": \n")
         self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")
+        Nasm.write("JE ELSE" + str(idIf) + "\n")
+        self.children[1].Evaluate(symTable, Nasm)
+        Nasm.write("JMP EXIT" + str(idIf) + "\n")
+        Nasm.write("ELSE" + str(idIf) + ": \n")
             
         if len(self.children) == 3:
-            Nasm.write("JE ELSE" + str(idIf) + "\n")
-            self.children[1].Evaluate(symTable, Nasm)
-            Nasm.write("JMP EXIT" + str(idIf) + "\n")
-            Nasm.write("ELSE" + str(idIf) + ": \n")
+            
             self.children[2].Evaluate(symTable, Nasm)
-        else:
-            self.children[1].Evaluate(symTable, Nasm)
-            Nasm.write("JE EXIT" + str(idIf) + "\n")
-            self.children[1].Evaluate(symTable, Nasm)
-            Nasm.write("JMP EXIT" + str(idIf) + "\n")
-        Nasm.write("EXIT" +str(idIf)+ ": \n")
+        Nasm.write(f"EXIT" + str(idIf) + ": \n")
+       
+       
 
 class WhileOp(Node):
     def Evaluate(self, symTable, Nasm):

@@ -212,10 +212,15 @@ class Assignement(Node):
 class Print(Node):
     def Evaluate(self, symbolTable, Nasm):
         #print("PRINT")
-        self.children[0].Evaluate(symbolTable,Nasm)[0]
+        a = self.children[0].Evaluate(symbolTable,Nasm)[0]
         Nasm.write("PUSH EBX \n")
         Nasm.write("CALL print \n")
         Nasm.write("POP EBX \n")
+        pass
+        if type(a) is str:
+                print(a)
+        else:
+            print(int(a))
         pass
 class Scan(Node):
     def Evaluate(self, symbolTable, Nasm):
@@ -260,6 +265,7 @@ class VarVal(Node):
         #print("VARVAL")
         get = symbolTable.getter(self.value)
         Nasm.write("MOV EBX, [EBP-" + str(get[2]) + "] +\n")
+        return get
 
 class VarDecl(Node):
     def Evaluate(self, symbolTable, Nasm):

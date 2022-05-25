@@ -1,15 +1,13 @@
 {
-    int x;
-    x = 3+1;
-    if (x > 1)
-      x = 5-1;
-    if (x == 3) {
-    }
-    else {
-      x = 3;
-    }
-    while (x < 5){
-            x = x+1;
-        }
-    printf(x);
+int i;
+int n;
+int f;
+n = 5;
+i = 2;
+f = 1;
+while (i < n + 1) {
+f = f * i;
+i = i + 1;
+}
+printf(f);
 }

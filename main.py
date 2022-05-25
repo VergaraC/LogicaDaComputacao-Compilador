@@ -123,7 +123,6 @@ class SymbolTable():
                 ass = list(self.symbolTable[var])
                 ass[0] = value
                 self.symbolTable[var] = tuple(ass)
-                pass
             else:
                 raise error
         else:
@@ -315,7 +314,7 @@ class IfOp(Node):
     def Evaluate(self, symTable, Nasm):
         #print("IF")
         idIf = Node.getId()
-        Nasm.write("IF" + str(idIf) +": \n")
+        Nasm.write("IF" + str(idIf) + ": \n")
         self.children[0].Evaluate(symTable, Nasm)
         Nasm.write("CMP EBX, False \n")
             
@@ -348,7 +347,7 @@ class VarVal(Node):
     def Evaluate(self, symbolTable, Nasm):
         #print("VARVAL")
         get = symbolTable.getter(self.value)
-        Nasm.write("MOV EBX, [EBP-" + str(get[2]) + "] +\n")
+        Nasm.write("MOV EBX, [EBP-" + str(get[2]) + "] \n")
         return get
 
 class VarDecl(Node):

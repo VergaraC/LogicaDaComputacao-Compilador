@@ -73,17 +73,17 @@ class BinOp(Node):
     def Evaluate(self, symbolTable, Nasm):
         #print("BINOP")
         #print(self.children)
-        r1 = self.children[0].Evaluate(symbolTable)
+        r1 = self.children[0].Evaluate(symbolTable,Nasm)
         Nasm.write("PUSH EBX")
         #print(r1)
-        r2 = self.children[1].Evaluate(symbolTable)
+        r2 = self.children[1].Evaluate(symbolTable,Nasm)
         Nasm.write("POP EAX")
         #print(r2)
         #print(self.value)
-        # print(self.children[0].Evaluate(symbolTable))
-        # print(self.children[1].Evaluate(symbolTable))
-        # print(self.children[0].Evaluate(symbolTable))
-        # print(self.children[1].Evaluate(symbolTable))
+        # print(self.children[0].Evaluate(symbolTable,Nasm))
+        # print(self.children[1].Evaluate(symbolTable,Nasm))
+        # print(self.children[0].Evaluate(symbolTable,Nasm))
+        # print(self.children[1].Evaluate(symbolTable,Nasm))
         
         if self.value == "CONCAT":
             return (str(r1[0]) + str(r2[0]), "STR")
@@ -151,7 +151,7 @@ class UnOp(Node):
         #print(self.value)
         #print(self.children)
         #print("eae")
-        r = self.children[0].Evaluate(symbolTable)
+        r = self.children[0].Evaluate(symbolTable,Nasm)
         #print(r)
         #print("hm")
         r = list(r)
@@ -183,9 +183,9 @@ class Assignement(Node):
     def Evaluate(self, symbolTable, Nasm):
         #print("ASS")
         #print(self.children)
-        ass = self.children[1].Evaluate(symbolTable)
+        ass = self.children[1].Evaluate(symbolTable,Nasm)
         #print(ass[1])
-        #print(self.children[0].Evaluate(symbolTable)[1])
+        #print(self.children[0].Evaluate(symbolTable,Nasm)[1])
         symbolTable.setter(self.children[0].value, ass[0], ass[1])
         get = symbolTable.getter(self.children[0].value)
         Nasm.write("MOV [EBP-" + get[2] + "], EBX \n")
@@ -193,7 +193,7 @@ class Assignement(Node):
 class Print(Node):
     def Evaluate(self, symbolTable, Nasm):
         #print("PRINT")
-        self.children[0].Evaluate(symbolTable)[0]
+        self.children[0].Evaluate(symbolTable,Nasm)[0]
         Nasm.write("PUSH EBX \n")
         Nasm.write("CALL print \n")
         Nasm.write("POP EBX \n")
@@ -260,7 +260,7 @@ class Block(Node):
         #print(self.children)
         for i in self.children:
             #print(i)
-            i.Evaluate(symbolTable)
+            i.Evaluate(symbolTable,Nasm)
             #print("foi")
         pass
 class Tokenizer():

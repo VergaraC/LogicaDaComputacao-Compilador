@@ -213,10 +213,10 @@ class FuncCall(Node):
 
     def Evaluate(self, symbolTable, FuncTable):
         func = FuncTable.getter(self.value)
-        print(func)
-        print("FUNCCALL")
-        print(self.args)
-        print(func)
+        #print(func)
+        #print("FUNCCALL")
+        #print(self.args)
+        #print(func)
         if len(self.args) == len(func[0].args):
             argsList = list()
             if(len(self.args) == 0):
@@ -254,7 +254,7 @@ class Block(Node):
 class Program(Node):
     
     def Evaluate(self, symbolTable, funcTable):
-        print(self.children)
+        #print(self.children)
         for i in self.children:
 
             i.Evaluate(symbolTable, funcTable)

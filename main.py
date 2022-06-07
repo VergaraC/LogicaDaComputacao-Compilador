@@ -801,7 +801,7 @@ class Parser():
                                         raise error
                                 if tokens.actual.type == "CLOSE-P":
                                     tokens.selecrNext()
-                                    node = FuncDecl([nameD,typeD], args, Parser.parseBlock())
+                                    node = FuncDecl([nameD,typeD], args, Parser.parseBlock(tokens))
                                     return node
                             else:
                                 raise error
@@ -809,7 +809,7 @@ class Parser():
                             raise error
                     elif tokens.actual.type == "CLOSE-P":
                         tokens.selectNext()
-                        node = FuncDecl([nameD,typeD], args, Parser.parseBlock())
+                        node = FuncDecl([nameD,typeD], args, Parser.parseBlock(tokens))
                     else:
                         raise error
                 else:

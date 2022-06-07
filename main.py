@@ -38,9 +38,10 @@ class FuncTable():
     funcTable = dict()
     
     def getter(self,var):
-        if var in self.funcTable.keys():
-            return self.funcTable[var]
-        raise error
+        try:
+            return tuple(self.funcTable[var])
+        except:
+            raise error
     def createFunc(self, no, id, type):
         if id in self.funcTable.keys():
             raise error
@@ -162,7 +163,7 @@ class Assignement(Node):
 class Print(Node):
     def Evaluate(self, symbolTable, FuncTable):
         #print("PRINT")
-        a = self.children[0].Evaluate(symbolTable)[0]
+        a = self.children[0].Evaluate(symbolTable, FuncTable)[0]
         if type(a) is str:
             print(a)
         else:
@@ -202,8 +203,8 @@ class FuncDecl(Node):
         self.block = block
 
     def Evaluate(self, symbolTable, FuncTable):
-        #print("FUNCDECL")
-        FuncTable.createFunc(self.children[0].children.value, self.children[0].value, self)
+        #print("FUNCDECL") self, no, id, type):
+        FuncTable.createFunc(self, self.value[0], self.value[1])
 class FuncCall(Node):
     def __init__(self, value, args):
         self.value = value
@@ -212,7 +213,10 @@ class FuncCall(Node):
 
     def Evaluate(self, symbolTable, FuncTable):
         func = FuncTable.getter(self.value)
-        #print("FUNCCALL")
+        print(func)
+        print("FUNCCALL")
+        print(self.args)
+        print(func)
         if len(self.args) == len(func[0].args):
             argsList = list()
             if(len(self.args) == 0):
@@ -250,7 +254,9 @@ class Block(Node):
 class Program(Node):
     
     def Evaluate(self, symbolTable, funcTable):
+        print(self.children)
         for i in self.children:
+
             i.Evaluate(symbolTable, funcTable)
 
 class Tokenizer():
@@ -761,22 +767,31 @@ class Parser():
     @staticmethod
     def parseProgram(tokens):
         node = Program(0,[])
-        while tokens.actual.value != "EOF":
+        while tokens.actual.type != "EOF":
+            #print(tokens.actual.type)
+            #print(tokens.actual.value)
+            #a = Parser.parseDeclaration(tokens)
+            #print(a)
             node.children.append(Parser.parseDeclaration(tokens))
         node.children.append(FuncCall("main", []))
         return node
     
     @staticmethod
     def parseDeclaration(tokens):
+        #print(tokens.actual.type)
+        #print(tokens.actual.value)
         if tokens.actual.type == "VARTYPE":
             typeD = tokens.actual.value
             tokens.selectNext()
+            
             if tokens.actual.type == "VAR":
                 nameD = tokens.actual.value
                 tokens.selectNext()
+                
                 if tokens.actual.type == "OPEN-P":
                     tokens.selectNext()
                     args = list()
+                    
                     if tokens.actual.type != "CLOSE-P" :
                         tokens.selectNext()
                         if tokens.actual.type == "VARTYPE":
@@ -810,6 +825,7 @@ class Parser():
                     elif tokens.actual.type == "CLOSE-P":
                         tokens.selectNext()
                         node = FuncDecl([nameD,typeD], args, Parser.parseBlock(tokens))
+                        return node
                     else:
                         raise error
                 else:
@@ -817,6 +833,8 @@ class Parser():
             else:
                 raise error
         else:
+            print(tokens.actual.type)
+            print(tokens.actual.value)
             raise error
     def run(origin):
         tokens = Tokenizer(origin)

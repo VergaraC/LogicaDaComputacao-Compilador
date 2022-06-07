@@ -33,7 +33,19 @@ class SymbolTable():
             raise error
         else:
             self.symbolTable[var] = (None, type)
-
+class FuncTable():
+    funcTable = dict()
+    
+    def getter(self,var):
+        if var in self.funcTable.keys():
+            return self.funcTable[var]
+        raise error
+    def createFunc(self, no, id, type):
+        if id in self.funcTable.keys():
+            raise error
+        else:
+            self.funcTable[id] = [no, type]
+            
 
 class Node():
     def __init__(self, value, listNodes):
@@ -43,12 +55,12 @@ class Node():
         pass
 
 class BinOp(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("BINOP")
         #print(self.children)
-        r1 = self.children[0].Evaluate(symbolTable)
+        r1 = self.children[0].Evaluate(symbolTable, FuncTable)
         #print(r1)
-        r2 = self.children[1].Evaluate(symbolTable)
+        r2 = self.children[1].Evaluate(symbolTable, FuncTable)
         #print(r2)
         #print(self.value)
         # print(self.children[0].Evaluate(symbolTable))
@@ -106,12 +118,12 @@ class BinOp(Node):
         else:
             raise error
 class UnOp(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("UNOP")
         #print(self.value)
         #print(self.children)
         #print("eae")
-        r = self.children[0].Evaluate(symbolTable)
+        r = self.children[0].Evaluate(symbolTable, FuncTable)
         #print(r)
         #print("hm")
         r = list(r)
@@ -129,25 +141,25 @@ class UnOp(Node):
         else:
             raise error
 class IntVal(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("INTVAL")
         return (self.value, "INT")
 class NoOp(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("NOOP")
         pass
 
 class Assignement(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("ASS")
         #print(self.children)
-        ass = self.children[1].Evaluate(symbolTable)
+        ass = self.children[1].Evaluate(symbolTable,FuncTable)
         #print(ass[1])
         #print(self.children[0].Evaluate(symbolTable)[1])
         symbolTable.setter(self.children[0].value, ass[0], ass[1])
         pass
 class Print(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("PRINT")
         a = self.children[0].Evaluate(symbolTable)[0]
         if type(a) is str:
@@ -156,46 +168,97 @@ class Print(Node):
             print(int(a))
         pass
 class Scan(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("SCAN")
         return (int(input()), "INT")
 class IfOp(Node):
-    def Evaluate(self, symTable):
+    def Evaluate(self, symTable, FuncTable):
         #print("IF")
-        if self.children[0].Evaluate(symTable)[0]:
-            self.children[1].Evaluate(symTable)
+        if self.children[0].Evaluate(symTable,  FuncTable)[0]:
+            self.children[1].Evaluate(symTable,  FuncTable)
         elif len(self.children) == 3:
-            self.children[2].Evaluate(symTable)
+            self.children[2].Evaluate(symTable,  FuncTable)
 class WhileOp(Node):
-    def Evaluate(self, symTable):
+    def Evaluate(self, symTable,  FuncTable):
         #print("WHILE")
-        while self.children[0].Evaluate(symTable)[0]:
-            self.children[1].Evaluate(symTable)
+        while self.children[0].Evaluate(symTable,  FuncTable)[0]:
+            self.children[1].Evaluate(symTable,  FuncTable)
 class VarVal(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("VARVAL")
         return symbolTable.getter(self.value)
 
 class VarDecl(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("VARDECL")
         for i in self.children:
             symbolTable.createVar(i, self.value)
+    def appendChild(self, child):
+        self.children.append(child)
+
+class FuncDecl(Node):
+    def __init__(self, value, args, block):
+        self.value = value
+        self.args = args
+        self.block = block
+
+    def Evaluate(self, symbolTable, FuncTable):
+        #print("FUNCDECL")
+        FuncTable.createFunc(self.children[0].children.value, self.children[0].value, self)
+class FuncCall(Node):
+    def __init__(self, value, args):
+        self.value = value
+        self.args = args
+        self.symbolTable = SymbolTable()
+
+    def Evaluate(self, symbolTable, FuncTable):
+        func = FuncTable.getter(self.value)
+        #print("FUNCCALL")
+        if len(self.args) == len(func[0].args):
+            argsList = list()
+            if(len(self.args) == 0):
+                return func[0].block.Evaluate(self.symbolTable, FuncTable)
+            else:
+                for i in func[0].args:
+                    i.Evaluate(self.symbolTable, FuncTable)
+                    argsList.append(i.children[0].value)
+                for local, i2 in zip(self.args, argsList):
+                    self.symbolTable.setter(i2,local.Evaluate(symbolTable,FuncTable))
+                return func[0].block.Evaluate(self.symbolTable, FuncTable)
+        else:
+            raise error
+class ReturnOp(Node):
+    def Evaluate(self, symbolTable, funcTable):
+        #print("return")
+        return self.child.Evaluate(symbolTable, funcTable)
 class StrVal(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print("STRVAL")
         return (self.value, "STRING")
         
 class Block(Node):
-    def Evaluate(self, symbolTable):
+    def Evaluate(self, symbolTable, FuncTable):
         #print(self.children)
         #print("BLOCK")
         #print(self.children)
         for i in self.children:
             #print(i)
-            i.Evaluate(symbolTable)
+            if i.value == "return":
+                return i.Evaluate(symbolTable, FuncTable)
+            i.Evaluate(symbolTable, FuncTable)
             #print("foi")
         pass
+    def appendChild(self, child):
+        self.children.append(child)
+class Program(Node):
+
+    def appendChild(self, node):
+        self.children.append(node)
+    
+    def Evaluate(self, symbolTable, funcTable):
+        for i in self.children:
+            i.Evaluate(symbolTable, funcTable)
+
 class Tokenizer():
     def __init__(self, origin):
         self.origin = origin
@@ -325,6 +388,10 @@ class Tokenizer():
                 self.actual = Token("VARTYPE","INT")
             elif char == "str":
                 self.actual = Token("VARTYPE","STRING")
+            elif char == "void":
+                self.actual = Token("VARTYPE","VOID")
+            elif char == "return":
+                self.actual = Token("RETURN",char)
             else:
                 self.actual = Token("VAR",char)
             return self.actual
@@ -470,7 +537,27 @@ class Parser():
             #print("var ")
             #print(tokens.actual.type)
             #print(tokens.actual.value)
-            if tokens.actual.type == "ASSINGMENT":
+            if tokens.actual.type == "OPEN-P": #pra funct
+
+                node1 = Parser.parseRelExpression(tokens)
+                tokens.selectNext()
+                nodes = list()
+                while tokens.actual.type == "COMMA":
+                    nodes.append( Parser.parseRelExpression(tokens))
+                    
+                if tokens.actual.type == "CLOSE-P":
+                    tokens.selectNext()
+                    if tokens.actual.type == "SEMICOLUM":
+                        #tokens.selectNext()
+                        #print(tokens.actual.type)
+                        #print(tokens.actual.value)
+                        #print("return")
+                        return node
+                    else: 
+                        raise error
+                else:
+                    raise error
+            elif tokens.actual.type == "ASSINGMENT":
                 #print("assigment ")
                 #print(tokens.actual.type)
                 #print(tokens.actual.value)
@@ -642,15 +729,75 @@ class Parser():
             raise error
         return node
 
+    @staticmethod
+    def parseProgram(tokens):
+        node = Program()
+        while tokens.actual.value != "EOF":
+            node.children.append(Parser.parseDeclaration(tokens))
+        node.children.append(FuncCall("main", []))
+        return node
+    
+    @staticmethod
+    def parseDeclaration(tokens):
+        if tokens.actual.type == "VARTYPE":
+            typeD = tokens.actual.value
+            tokens.selectNext()
+            if tokens.actual.type == "VAR":
+                nameD = tokens.actual.value
+                tokens.selectNext()
+                if tokens.actual.type == "OPEN-P":
+                    tokens.selectNext()
+                    args = list()
+                    if tokens.actual.type != "CLOSE-P" :
+                        tokens.selectNext()
+                        if tokens.actual.type == "VARTYPE":
+                            c = tokens.actual.value
+                            tokens.selectNext()
+                            if tokens.actual.type == "VAR":
+                                dec = VarDecl(c,tokens.actual.value)
+                                args.append(dec)
+                                tokens.selectNext()
+                                while tokens.actual.type == "COMMA" :
+                                    tokens.selectNext()
+                                    if tokens.actual.type == "VARTYPE":
+                                        c = tokens.actual.value
+                                        tokens.selectNext()
+                                        if(tokens.actual.type == "VAR"):
+                                            dec = VarDecl(c,tokens.actual.value)
+                                            args.append(dec)
+                                            tokens.selectNext()
+                                        else:
+                                            raise error
+                                    else:
+                                        raise error
+                                if tokens.actual.type == "CLOSE-P":
+                                    tokens.selecrNext()
+                                    node = FuncDecl([nameD,typeD], args, Parser.parseBlock())
+                                    return node
+                            else:
+                                raise error
+                        else:
+                            raise error
+                    elif tokens.actual.type == "CLOSE-P":
+                        tokens.selectNext()
+                        node = FuncDecl([nameD,typeD], args, Parser.parseBlock())
+                    else:
+                        raise error
+                else:
+                    raise error
+            else:
+                raise error
+        else:
+            raise error
     def run(origin):
         tokens = Tokenizer(origin)
         tokens.selectNext()
-        node = Parser.parseBlock(tokens)
-        #resultado = Parser.parseExpression(tokens).Evaluate()
+        node = Parser.parseProgram(tokens)
         if tokens.actual.type != "EOF":
             raise error
         symtable = SymbolTable()
-        return node.Evaluate(symtable)
+        funcTable = FuncTable()
+        return node.Evaluate(symtable,funcTable)
 if __name__ == '__main__':
     file = sys.argv[1]
     with open(file, "r") as f:

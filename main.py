@@ -1,4 +1,5 @@
 from ast import Or
+from lib2to3.pgen2 import token
 import sys
 from os import error
 import re
@@ -486,8 +487,29 @@ class Parser():
             node = StrVal(tokens.actual.value,[])
             tokens.selectNext()
         elif tokens.actual.type == "VAR":
-            node = VarVal(tokens.actual.value,[])
+            varVal = tokens.actual.value
             tokens.selectNext()
+            if tokens.actual.type == "OPEN-P":
+                tokens.selectNext()
+                args = list()
+                if tokens.actual.type != "CLOSE-P":
+                    while tokens.actual.type != "CLOSE-P":
+                        args.append(Parser.parseExpression(tokens))
+                        if tokens.actual.type == "COMMA":
+                            args.append(Parser.parseExpression(tokens))
+                            if tokens.actual.type == "CLOSE-P":
+                                node = FuncCall(varVal,args)
+                            else:
+                                raise error
+                        else:
+                            raise error
+                    tokens.selectNext()
+                elif tokens.actual.type == "CLOSE-P":
+                    node = FuncCall(varVal,args)
+                else:
+                    raise error
+            else:
+                node = VarVal(varVal,[])
         elif tokens.actual.type == "PLUS":
             node = UnOp("PLUS",[Parser.parseFactor(tokens)])
             #tokens.selectNext()
@@ -532,7 +554,7 @@ class Parser():
         if tokens.actual.type == "VAR":
             #print(tokens.actual.type)
             #print(tokens.actual.value)
-            node = VarVal(tokens.actual.value, [])
+            node = VarDecl(tokens.actual.value, [])
             tokens.selectNext()
             #print("var ")
             #print(tokens.actual.type)
@@ -556,22 +578,7 @@ class Parser():
                     node = FuncCall(node, args)
                     tokens.selectNext()
                 else:
-                    raise error
-            elif tokens.actual.type == "RETURN":
-                tokens.selectNext()
-                if tokens.actual.type == "OPEN-P":
-                    node = ReturnOp("RETURN", Parser.parseRelExpression(tokens))
-                    if tokens.actual.type == "CLOSE-P":
-                        tokens.selectNext()
-                        if tokens.actual.type == "SEMICOLUM":
-                            tokens.selectNext()
-                        else:
-                            raise error
-                    else:
-                        raise error
-                else:
-                    raise error
-                
+                    raise error                
             elif tokens.actual.type == "ASSINGMENT":
                 #print("assigment ")
                 #print(tokens.actual.type)
@@ -584,6 +591,20 @@ class Parser():
                         #print(tokens.actual.value)
                         #print("return")
                         return node
+                else:
+                    raise error
+            else:
+                raise error
+        elif tokens.actual.type == "RETURN":
+            tokens.selectNext()
+            if tokens.actual.type == "OPEN-P":
+                node = ReturnOp("RETURN", Parser.parseRelExpression(tokens))
+                if tokens.actual.type == "CLOSE-P":
+                    tokens.selectNext()
+                    if tokens.actual.type == "SEMICOLUM":
+                        tokens.selectNext()
+                    else:
+                        raise error
                 else:
                     raise error
             else:

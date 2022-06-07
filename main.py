@@ -538,25 +538,40 @@ class Parser():
             #print(tokens.actual.type)
             #print(tokens.actual.value)
             if tokens.actual.type == "OPEN-P": #pra funct
-
-                node1 = Parser.parseRelExpression(tokens)
                 tokens.selectNext()
-                nodes = list()
-                while tokens.actual.type == "COMMA":
-                    nodes.append( Parser.parseRelExpression(tokens))
-                    
-                if tokens.actual.type == "CLOSE-P":
+                args = list()
+                if tokens.actual.type != "CLOSE-P":
+                    while tokens.actual.type != "CLOSE-P":
+                        args.append(Parser.parseRelExpression(tokens))
+                        if tokens.actual.type == "COMMA":
+                            args.append(Parser.parseRelExpression(tokens))
+                            if tokens.actual.type == "CLOSE-P":
+                                node = FuncCall(node, args)
+                            else:
+                                raise error
+                        else:
+                            raise error
+                    tokens.selectNext()         
+                elif tokens.actual.type == "CLOSE-P":
+                    node = FuncCall(node, args)
                     tokens.selectNext()
-                    if tokens.actual.type == "SEMICOLUM":
-                        #tokens.selectNext()
-                        #print(tokens.actual.type)
-                        #print(tokens.actual.value)
-                        #print("return")
-                        return node
-                    else: 
+                else:
+                    raise error
+            elif tokens.actual.type == "RETURN":
+                tokens.selectNext()
+                if tokens.actual.type == "OPEN-P":
+                    node = ReturnOp("RETURN", Parser.parseRelExpression(tokens))
+                    if tokens.actual.type == "CLOSE-P":
+                        tokens.selectNext()
+                        if tokens.actual.type == "SEMICOLUM":
+                            tokens.selectNext()
+                        else:
+                            raise error
+                    else:
                         raise error
                 else:
                     raise error
+                
             elif tokens.actual.type == "ASSINGMENT":
                 #print("assigment ")
                 #print(tokens.actual.type)

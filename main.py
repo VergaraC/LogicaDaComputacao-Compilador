@@ -194,8 +194,6 @@ class VarDecl(Node):
         #print("VARDECL")
         for i in self.children:
             symbolTable.createVar(i, self.value)
-    def appendChild(self, child):
-        self.children.append(child)
 
 class FuncDecl(Node):
     def __init__(self, value, args, block):
@@ -249,12 +247,7 @@ class Block(Node):
             i.Evaluate(symbolTable, FuncTable)
             #print("foi")
         pass
-    def appendChild(self, child):
-        self.children.append(child)
 class Program(Node):
-
-    def appendChild(self, node):
-        self.children.append(node)
     
     def Evaluate(self, symbolTable, funcTable):
         for i in self.children:
@@ -767,7 +760,7 @@ class Parser():
 
     @staticmethod
     def parseProgram(tokens):
-        node = Program()
+        node = Program(0,[])
         while tokens.actual.value != "EOF":
             node.children.append(Parser.parseDeclaration(tokens))
         node.children.append(FuncCall("main", []))
